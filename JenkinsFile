@@ -44,14 +44,12 @@ pipeline {
                     def baseVersion = env.BASE_VERSION
                     echo "Base version: ${baseVersion}"
 
-                    // Read the current version from the project
-                    def currentVersion = sh(script: 'mvn help:evaluate -Dexpression=project.version -q -DforceStdout', returnStdout: true).trim()
+                    def currentVersion = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'version\']/text()" pom.xml', returnStdout: true).trim()
                     echo "Current version: ${currentVersion}"
 
-                    // Extract major, minor, and patch as integers
-                    def (currentMajor, currentMinor, currentPatch) = (currentVersion =~ /\d+/).findAll().collect { it.toInteger() }
-                    def (baseMajor, baseMinor, basePatch) = (baseVersion =~ /\d+/).findAll().collect { it.toInteger() }
-
+                    // Extract major, minor, and patch from base and current versions
+                    def (baseMajor, baseMinor, basePatch) = baseVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)/, '$1.$2.$3').tokenize('.').collect { it?.toInteger() ?: null }
+                    def (currentMajor, currentMinor, currentPatch) = currentVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)-.*/, '$1.$2.$3').tokenize('.').collect { it?.toInteger() ?: null }
                     
 
                     // Increment the version based on the release type
