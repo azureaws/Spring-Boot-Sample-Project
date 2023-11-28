@@ -68,7 +68,10 @@ pipeline {
                             error "Invalid release type or mismatch with base version. Stopping the pipeline."
                         }
                     }
-
+                    // Check if the current version is equal to the new version
+                    if (currentVersion == newVersion) {
+                        error "Current version is equal to the new version. Stopping the pipeline."
+                    }
                     // Read and increment the build number
                     def buildNumberFile = "${WORKSPACE}/buildNumber.txt"
                     def buildNumber = readFile(buildNumberFile).trim()
