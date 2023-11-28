@@ -50,7 +50,7 @@ pipeline {
 
                     // Extract major, minor, and patch components
                     def (currentMajor, currentMinor, currentPatch) = currentVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)-.*/, '$1 $2 $3').split(' ')
-                    def (baseMajor, baseMinor, basePatch) = baseVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)/, '$1 $2 $3').split(' ')
+def (baseMajor, baseMinor, basePatch) = baseVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)/, '$1 $2 $3').split(' ')
 
                     // Increment the version based on the release type
                     def newVersion
