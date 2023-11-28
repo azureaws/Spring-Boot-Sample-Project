@@ -6,7 +6,7 @@ pipeline {
     }
     environment {
         NAMESPACE = '9334-sit1-ifmis'
-        BASE_VERSION = '1.0.0'  // Set a default base version or update it as needed
+        BASE_VERSION = '0.0.1'  // Set a default base version or update it as needed
         BASE_VERSION_FILE = 'baseversion.txt'
         BUILD_VERSION_FILE = 'buildversion.txt'
     }
