@@ -77,7 +77,7 @@ pipeline {
                     def buildNumber = readFile(buildNumberFile).trim()
                     buildNumber = (buildNumber.toInteger() + 1).toString()
                     env.BUILD_NUMBER = buildNumber
-
+                    if [ "$releaseType" != "none" ]; then
                     // Append build number
                     newVersion += "-v${buildNumber}"
 
