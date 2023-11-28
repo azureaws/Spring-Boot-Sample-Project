@@ -1,0 +1,84 @@
+pipeline {
+    agent { label 'unix' }
+    tools {
+        maven 'Maven 3.9.4'
+        jdk 'AdoptiumOpenJDK 17.0.2_8'
+    }
+    environment {
+        NAMESPACE = '9334-sit1-ifmis'
+        BASE_VERSION_FILE = 'baseversion.txt'
+        BUILD_VERSION_FILE = 'buildversion.txt'
+    }
+
+   stage('Initialize') {
+    steps {
+        script {
+            // Check if the build number file exists, if not, initialize it
+            def buildNumberFile = "${WORKSPACE}/buildNumber.txt"
+            if (!fileExists(buildNumberFile)) {
+                echo "Initializing build number..."
+                writeFile file: buildNumberFile, text: '1'
+            }
+
+            // Read the build number from the file and store it in the environment
+            def buildNumber = readFile(buildNumberFile).trim()
+            echo "Build number: ${buildNumber}"
+            env.BUILD_NUMBER = buildNumber
+        }
+    }
+}
+
+stage('Increment Version and Build') {
+    steps {
+        script {
+            def releaseType = params.releaseType
+            echo "Release type is: ${releaseType}"
+
+            // Read the base version from the workspace
+            def baseVersion = env.BASE_VERSION
+            echo "Base version: ${baseVersion}"
+
+            // Read the current version from the project
+            def currentVersion = sh(script: 'mvn help:evaluate -Dexpression=project.version -q -DforceStdout', returnStdout: true).trim()
+            echo "Current version: ${currentVersion}"
+
+            // Extract major, minor, and patch components
+            def (currentMajor, currentMinor, currentPatch) = currentVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)-.*/, '$1 $2 $3').split(' ')
+            def (baseMajor, baseMinor, basePatch) = baseVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)/, '$1 $2 $3').split(' ')
+
+            // Increment the version based on the release type
+            def newVersion
+            if (releaseType == 'none') {
+                // No increment for 'none'
+                newVersion = currentVersion
+            } else {
+                // Increment major, minor, or patch based on the release type
+                if (releaseType == 'major' && currentMajor.toInteger() == baseMajor.toInteger() + 1) {
+                    newVersion = "${(baseMajor.toInteger() + 1)}.0.0"
+                } else if (releaseType == 'minor' && currentMinor.toInteger() == baseMinor.toInteger() + 1) {
+                    newVersion = "${baseMajor}.${(baseMinor.toInteger() + 1)}.0"
+                } else if (releaseType == 'patch' && currentPatch.toInteger() == basePatch.toInteger() + 1) {
+                    newVersion = "${baseMajor}.${baseMinor}.${(basePatch.toInteger() + 1)}"
+                } else {
+                    error "Invalid release type or mismatch with base version. Stopping the pipeline."
+                }
+            }
+
+            // Read and increment the build number
+            def buildNumberFile = "${WORKSPACE}/buildNumber.txt"
+            def buildNumber = readFile(buildNumberFile).trim()
+            buildNumber = (buildNumber.toInteger() + 1).toString()
+            env.BUILD_NUMBER = buildNumber
+
+            // Append build number
+            newVersion += "-v${buildNumber}"
+
+            echo "New version: ${newVersion}"
+
+            // Write the new version and updated build number back to the files
+            writeFile file: "${BUILD_VERSION_FILE}", text: newVersion
+            writeFile file: buildNumberFile, text: buildNumber
+            echo "Build version and build number updated in ${BUILD_VERSION_FILE} and ${buildNumberFile}"
+        }
+    }
+}
