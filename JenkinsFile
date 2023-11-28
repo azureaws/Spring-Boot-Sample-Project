@@ -2,7 +2,7 @@ pipeline {
     agent { label 'unix' }
     tools {
         maven 'Maven 3.9.4'
-        jdk 'JDK 17'
+        jdk 'JDK17'
     }
     environment {
         NAMESPACE = '9334-sit1-ifmis'
