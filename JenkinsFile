@@ -77,11 +77,10 @@ pipeline {
                     def buildNumber = readFile(buildNumberFile).trim()
                     buildNumber = (buildNumber.toInteger() + 1).toString()
                     env.BUILD_NUMBER = buildNumber
-                if [ "$releaseType" != "none" ]; then
-                    // Append build number
-                    newVersion += "-v${buildNumber}"
-
-                    echo "New version: ${newVersion}"
+                    if [ "$releaseType" != "none" ]; then
+                        // Append build number
+                        newVersion += "-v${buildNumber}"
+                        echo "New version: ${newVersion}"
 
                     // Write the new version and updated build number back to the files
                     writeFile file: "${BUILD_VERSION_FILE}", text: newVersion
