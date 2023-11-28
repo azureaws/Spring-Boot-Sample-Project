@@ -48,10 +48,10 @@ pipeline {
                     def currentVersion = sh(script: 'mvn help:evaluate -Dexpression=project.version -q -DforceStdout', returnStdout: true).trim()
                     echo "Current version: ${currentVersion}"
 
-                    // Extract major, minor, and patch using split
-                    def (currentMajor, currentMinor, currentPatch) = currentVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)-.*/, '$1.$2.$3').split('\\.').collect { it.toInteger() ?: null }
+                    // Extract major, minor, and patch using cut
+                    def (currentMajor, currentMinor, currentPatch) = currentVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)-.*/, '$1.$2.$3').tokenize('.').collect { it?.cut(-1).toInteger() ?: null }
                     
-                    def (baseMajor, baseMinor, basePatch) = baseVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)/, '$1.$2.$3').split('\\.').collect { it.toInteger() ?: null }
+                    def (baseMajor, baseMinor, basePatch) = baseVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)/, '$1.$2.$3').tokenize('.').collect { it?.cut(-1).toInteger() ?: null }
 
                     
 
