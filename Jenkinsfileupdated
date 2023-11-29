@@ -15,6 +15,25 @@ pipeline {
     }
 
     stages {
+          stage('Maven Build') {
+            steps {
+                script {
+                    withCredentials([
+
+    usernamePassword(credentialsId: 'deploy_artifactory_9334', passwordVariable: 'ART_PASS', usernameVariable: 'ART_USER'),
+    usernamePassword(credentialsId: 'deploy_artifactory_9334', passwordVariable: 'REPO_PWD', usernameVariable: 'REPO_USER')
+                                   ]) 
+                    {                   
+                   
+                    sh '''            
+                   
+                    mvn -X clean package install -U -s ./settings.xml -DeirRepo.user=${REPO_USER} -DeirRepo.pwd=${REPO_PWD}
+                    ls -la
+                    '''
+                    }
+               }
+            }
+        }
         stage('Initialize') {
             steps {
                 script {
