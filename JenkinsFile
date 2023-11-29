@@ -110,7 +110,7 @@ pipeline {
             echo "Base version updated to: ${newVersion}"
             // Remove '-v' suffix from new version if it exists
             def sanitizedNewVersion = newVersion.endsWith('-v') ? newVersion.replaceAll(/-v$/, '') : newVersion
-
+            echo $sanitizedNewVersion
             
             // Write the new version and updated build number back to the files
             writeFile file: "${BUILD_VERSION_FILE}", text: newVersion
