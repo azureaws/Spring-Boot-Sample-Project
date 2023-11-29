@@ -96,7 +96,7 @@ pipeline {
                     env.BUILD_NUMBER = buildNumber
 
                     if (releaseType != "none") {
-                        newVersion += "-${buildNumber}"
+                        newVersion += "-v${buildNumber}"
                         echo "New version: ${newVersion}"
                     }
 
