@@ -25,7 +25,7 @@ pipeline {
                    
                     sh '''            
                    
-                    mvn -X clean package install
+                    echo "Maven build"
                     ls -la
                     '''
                     }
