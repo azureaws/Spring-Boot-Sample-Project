@@ -6,7 +6,7 @@ pipeline {
         jdk 'AdoptiumOpenJDK 17.0.2_8'        
     }        
     environment {
-        NAMESPACE = '9334-sit1-ifmis'
+        NAMESPACE = '9334-dev1-ifmis'
         BASE_VERSION_FILE = 'baseversion.txt'
         BUILD_VERSION_FILE = 'buildversion.txt'
     }
