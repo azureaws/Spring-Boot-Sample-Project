@@ -19,8 +19,7 @@ pipeline {
                 script {
                     withCredentials([
 
-    usernamePassword(credentialsId: 'deploy_artifactory_9334', passwordVariable: 'ART_PASS', usernameVariable: 'ART_USER'),
-    usernamePassword(credentialsId: 'deploy_artifactory_9334', passwordVariable: 'REPO_PWD', usernameVariable: 'REPO_USER')
+    usernamePassword(credentialsId: 'deploy_9334', passwordVariable: 'REPO_PWD', usernameVariable: 'REPO_USER')
                                    ]) 
                     {                   
                    
