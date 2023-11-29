@@ -65,10 +65,6 @@ pipeline {
                     def currentVersion = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'version\']/text()" pom.xml', returnStdout: true).trim()
                     echo "Current version: ${currentVersion}"
 
-                    def (currentMajor, currentMinor, currentPatch) = currentVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)/, '$1 $2 $3').split(' ')
-                    def (baseMajor, baseMinor, basePatch) = baseVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)/, '$1 $2 $3').split(' ')
-                    
-
                     // Increment the version based on the release type
                     def newVersion
                     if (releaseType == 'none') {
@@ -76,6 +72,9 @@ pipeline {
                         newVersion = currentVersion
                     } else {
                         // Increment major, minor, or patch based on the release type
+                        def (baseMajor, baseMinor, basePatch) = baseVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)/, '$1 $2 $3').split(' ')
+                        def (currentMajor, currentMinor, currentPatch) = currentVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)/, '$1 $2 $3').split(' ')
+
                         if (releaseType == 'major' && currentMajor.toInteger() == baseMajor.toInteger() + 1) {
                             newVersion = "${(baseMajor.toInteger() + 1)}.0.0"
                         } else if (releaseType == 'minor' && currentMinor.toInteger() == baseMinor.toInteger() + 1) {
@@ -86,21 +85,41 @@ pipeline {
                             error "Invalid release type or mismatch with base version. Stopping the pipeline."
                         }
                     }
+
                     // Read and increment the build number
                     def buildNumberFile = "${WORKSPACE}/buildNumber.txt"
                     def buildNumber = readFile(buildNumberFile).trim()
                     buildNumber = (buildNumber.toInteger() + 1).toString()
                     env.BUILD_NUMBER = buildNumber
+
                     if (releaseType != "none") {
                         newVersion += "-v${buildNumber}"
                         echo "New version: ${newVersion}"
+
+                        // Compare new version with current version
+                        if (newVersion == currentVersion) {
+                            error "New version (${newVersion}) matches the current version (${currentVersion}). Stopping the pipeline."
+                        }
                     }
+
+                    // Update the base version
+                    env.BASE_VERSION = newVersion
+                    echo "Base version updated to: ${newVersion}"
+
                     // Write the new version and updated build number back to the files
                     writeFile file: "${BUILD_VERSION_FILE}", text: newVersion
                     writeFile file: buildNumberFile, text: buildNumber
                     echo "Build version and build number updated in ${BUILD_VERSION_FILE} and ${buildNumberFile}"
+
+                    // Add a conditional check to abort the pipeline if the versions match
+                    if (newVersion == currentVersion) {
+                        currentBuild.result = 'ABORTED'
+                        error "Pipeline aborted due to version match."
+                    }
                 }
             }
         }
+
+       
     }
 }
