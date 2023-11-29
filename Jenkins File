@@ -121,6 +121,5 @@ pipeline {
             }
         }
 
-        // ... (other stages of your pipeline)
     }
 }
