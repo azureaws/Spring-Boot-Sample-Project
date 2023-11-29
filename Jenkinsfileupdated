@@ -13,22 +13,6 @@ pipeline {
     parameters {
         choice(name: 'releaseType', choices: ['none', 'major', 'minor', 'patch'], description: 'Select the release type.')
     }
-
-    stages {
-          stage('Maven Build') {
-            steps {
-                script {
-                    {                   
-                   
-                    sh '''            
-                   
-                    mvn -X clean package install -U -s ./settings.xml -DeirRepo.user=${REPO_USER} -DeirRepo.pwd=${REPO_PWD}
-                    ls -la
-                    '''
-                    }
-               }
-            }
-        }
         stage('Initialize') {
             steps {
                 script {
