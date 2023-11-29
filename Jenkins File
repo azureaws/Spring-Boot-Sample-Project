@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
     tools {
@@ -121,5 +120,7 @@ pipeline {
                 }
             }
         }
+
+        // ... (other stages of your pipeline)
     }
 }
