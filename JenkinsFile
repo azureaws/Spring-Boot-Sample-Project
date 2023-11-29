@@ -87,6 +87,7 @@ pipeline {
                 } else if (releaseType == 'minor' && currentMinor.toInteger() == baseMinor.toInteger() + 1) {
                     newVersion = "${baseMajor}.${(baseMinor.toInteger() + 1)}.0"
                 } else if (releaseType == 'patch' && currentPatch.toInteger() == basePatch.toInteger() + 1) {
+                    def newPatchVersion = (basePatch.toInteger() + 1).toString()
                     newVersion = "${baseMajor}.${baseMinor}.${(basePatch.toInteger() + 1)}"
                 } else {
                     error "Invalid release type or mismatch with base version. Stopping the pipeline."
