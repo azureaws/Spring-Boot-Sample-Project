@@ -18,18 +18,14 @@ pipeline {
         stage('Initialize') {
             steps {
                 script {
-                    // Read the version from pom.xml
-                    def pomVersion = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'version\']/text()" pom.xml', returnStdout: true).trim()
-                    echo "POM version: ${pomVersion}"
-
                     // Check if the base version file exists
                     def baseVersionFile = "${WORKSPACE}/${BASE_VERSION_FILE}"
                     def baseVersion
 
                     if (!fileExists(baseVersionFile)) {
-                        // For the first build, set the base version to the version in pom.xml
-                        echo "Initializing base version to '${pomVersion}'..."
-                        baseVersion = pomVersion
+                        // For the first build, set the base version to '0.0.1'
+                        echo "Initializing base version to '0.0.1'..."
+                        baseVersion = '0.0.1'
                     } else {
                         // For subsequent builds, read the base version from the file
                         baseVersion = readFile(baseVersionFile).trim()
@@ -112,14 +108,10 @@ pipeline {
                     writeFile file: "${BUILD_VERSION_FILE}", text: newVersion
                     writeFile file: buildNumberFile, text: buildNumber
                     echo "Build version and build number updated in ${BUILD_VERSION_FILE} and ${buildNumberFile}"
-
-                    // Compare new version with current version
-                    if (newVersion == currentVersion) {
-                        error "New version matches current version. Stopping the pipeline."
-                    }
                 }
             }
         }
 
+        // ... (other stages of your pipeline)
     }
 }
