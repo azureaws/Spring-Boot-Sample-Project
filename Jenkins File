@@ -78,7 +78,7 @@ pipeline {
                         def (baseMajor, baseMinor, basePatch) = baseVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)/, '$1 $2 $3').split(' ')
                         def (currentMajor, currentMinor, currentPatch) = currentVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)/, '$1 $2 $3').split(' ')
                         // Remove 'v' from base patch version only if it contains 'v'
-                        basePatch = basePatch.contains('v') ? basePatch.replaceAll(/v/, '') : basePatch
+                        basePatch = basePatch.contains('-v') ? basePatch.replaceAll(/-v/, '') : basePatch
                         if (releaseType == 'major' && currentMajor.toInteger() == baseMajor.toInteger() + 1) {
                             newVersion = "${(baseMajor.toInteger() + 1)}.0.0"
                         } else if (releaseType == 'minor' && currentMinor.toInteger() == baseMinor.toInteger() + 1) {
