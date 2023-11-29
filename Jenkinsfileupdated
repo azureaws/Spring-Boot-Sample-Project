@@ -76,7 +76,7 @@ pipeline {
             def newVersion
             if (releaseType == 'none') {
                 // No increment for 'none'
-                newVersion = currentVersion
+                echi "No action neede Stopping the Pipeline"
             } else {
                 // Increment major, minor, or patch based on the release type
                 def (baseMajor, baseMinor, basePatch) = baseVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)/, '$1 $2 $3').split(' ')
