@@ -123,6 +123,68 @@ pipeline {
             }
         }
 
-        // ... (other stages of your pipeline)
+        stage('Docker Build') {
+    steps {
+        script {
+            def isPodmanBuildNeeded = fileExists("${WORKSPACE}/Dockerfile")
+            def newVersion = readFile "${BUILD_VERSION_FILE}"
+            echo "Using the new version in Docker Build stage: ${newVersion}"
+            if (isPodmanBuildNeeded) {
+                        echo "Building Docker image with Podman..."
+                            // Use the module
+                        DOCKER_IMAGE_NAME = "artifactory.usps.gov/eir-9334-docker/usps/ifmis-department-location-service-out"
+                        
+                        // Set environment variables for proxy and temporary directory
+                        withCredentials([usernamePassword(credentialsId: 'deploy_artifactory_9334', passwordVariable: 'ART_PASS', usernameVariable: 'ART_USER')]) {
+                            withEnv(['HTTPS_PROXY=proxy.usps.gov:8080', "TMPDIR=${WORKSPACE}"]) {
+                                echo " "
+                                echo "##########################################################################"
+                                echo "Check images before"
+                                echo "##########################################################################"
+                                sh 'podman images'
+
+                                echo " "
+                                echo "##########################################################################"
+                                echo "Login to Artifactory"
+                                echo "##########################################################################"
+                                sh "podman login -u $ART_USER -p $ART_PASS artifactory.usps.gov"
+
+                                echo " "
+                                echo "##########################################################################"
+                                echo "Build image"
+                                echo "##########################################################################"
+                                sh "podman build -t ${DOCKER_IMAGE_NAME}:${newVersion} . --format docker"
+
+                                echo " "
+                                echo "##########################################################################"
+                                echo "Tag image"
+                                echo "##########################################################################"
+                                sh "podman tag ${DOCKER_IMAGE_NAME}:${newVersion} ${DOCKER_IMAGE_NAME}:${newVersion}"
+
+                                echo " "
+                                echo "##########################################################################"
+                                echo "Push image"
+                                 echo "##########################################################################"
+                                sh "podman push -f v2s2 ${DOCKER_IMAGE_NAME}:${newVersion} --format v2s2"
+
+                                echo " "
+                                echo "##########################################################################"
+                                echo "Logout from Artifactory"
+                                echo "##########################################################################"
+                                sh 'podman logout --all'
+
+                                echo " "
+                                echo "##########################################################################"
+                                echo "Images after"
+                                echo "##########################################################################"
+                                sh 'podman images'
+                            }
+                        }
+                    } else {
+                        echo "No Docker build needed as Dockerfile or source files haven't changed."
+                    }
+                }
+            }
+        }
     }
 }
