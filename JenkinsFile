@@ -6,7 +6,6 @@ pipeline {
     }
     environment {
         NAMESPACE = '9334-sit1-ifmis'
-        BASE_VERSION = '0.0.1'  // Set a default base version or update it as needed
         BASE_VERSION_FILE = 'baseversion.txt'
         BUILD_VERSION_FILE = 'buildversion.txt'
     }
@@ -19,17 +18,36 @@ pipeline {
         stage('Initialize') {
             steps {
                 script {
-                    // Check if the build number file exists, if not, initialize it
-                    def buildNumberFile = "${WORKSPACE}/buildNumber.txt"
-                    if (!fileExists(buildNumberFile)) {
-                        echo "Initializing build number..."
-                        writeFile file: buildNumberFile, text: '1'
+                    // Check if the base version file exists
+                    def baseVersionFile = "${WORKSPACE}/${BASE_VERSION_FILE}"
+                    def baseVersion
+
+                    if (!fileExists(baseVersionFile)) {
+                        // For the first build, set the base version to '0.0.1'
+                        echo "Initializing base version to '0.0.1'..."
+                        baseVersion = '0.0.1'
+                        // Create or update the base version file
+                        writeFile file: baseVersionFile, text: baseVersion
+                    } else {
+                        // For subsequent builds, read the base version from the file
+                        baseVersion = readFile(baseVersionFile).trim()
+                        echo "Base version read from file: ${baseVersion}"
                     }
 
                     // Read the build number from the file and store it in the environment
+                    def buildNumberFile = "${WORKSPACE}/buildNumber.txt"
+                    if (!fileExists(buildNumberFile)) {
+                        echo "Initializing build number..."
+                        writeFile file: buildNumberFile, text: '0'
+                    }
+
                     def buildNumber = readFile(buildNumberFile).trim()
                     echo "Build number: ${buildNumber}"
                     env.BUILD_NUMBER = buildNumber
+
+                    // Set the base version in the environment
+                    env.BASE_VERSION = baseVersion
+                    echo "Base version: ${baseVersion}"
                 }
             }
         }
