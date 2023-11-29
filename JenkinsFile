@@ -108,13 +108,10 @@ pipeline {
             // Update the base version for the next build
             env.BASE_VERSION = newVersion
             echo "Base version updated to: ${newVersion}"
-            // Remove '-v' suffix from new version if it exists
-            def sanitizedNewVersion = newVersion.endsWith('-v') ? newVersion.replaceAll(/-v$/, '') : newVersion
-            echo $sanitizedNewVersion
             
             // Write the new version and updated build number back to the files
             writeFile file: "${BUILD_VERSION_FILE}", text: newVersion
-            writeFile file: baseVersionFile, text: sanitizedNewVersion // Write the new base version to the file
+            writeFile file: baseVersionFile, text: newVersion // Write the new base version to the file
             writeFile file: buildNumberFile, text: buildNumber
             echo "Build version, base version, and build number updated in ${BUILD_VERSION_FILE}, ${BASE_VERSION_FILE}, and ${buildNumberFile}"
 
