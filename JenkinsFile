@@ -86,9 +86,26 @@ pipeline {
                     newVersion = "${(baseMajor.toInteger() + 1)}.0.0"
                 } else if (releaseType == 'minor' && currentMinor.toInteger() == baseMinor.toInteger() + 1) {
                     newVersion = "${baseMajor}.${(baseMinor.toInteger() + 1)}.0"
-                } else if (releaseType == 'patch' && currentPatch.toInteger() == basePatch.toInteger() + 1) {
-                    def newPatchVersion = basePatch.startsWith('v') ? basePatch.substring(1) : basePatch
-                    newVersion = "${baseMajor}.${baseMinor}.${(basePatch.toInteger() + 1)}"
+                } else if (releaseType == 'patch' && basePatch && basePatch.startsWith('v') && currentPatch && currentPatch.startsWith('v')) {
+                    // Remove "v" prefix if present in both base and current patch versions
+                    def newPatchVersion = basePatch.substring(1)
+                    def currentPatchVersion = currentPatch.substring(1)
+                
+                    if (currentPatchVersion.toInteger() == (newPatchVersion.toInteger() + 1)) {
+                        newVersion = "${baseMajor}.${baseMinor}.${newPatchVersion}"
+                    } else {
+                        error "Invalid patch version or mismatch with base version. Stopping the pipeline."
+                    }
+                 } else {
+                       error "Invalid release type or mismatch with base version. Stopping the pipeline."
+                 }
+            }
+                    
+        if (currentPatchVersion.toInteger() == (newPatchVersion.toInteger() + 1)) {
+            newVersion = "${baseMajor}.${baseMinor}.${newPatchVersion}"
+        } else {
+            error "Invalid patch version or mismatch with base version. Stopping the pipeline."
+        }
                 } else {
                     error "Invalid release type or mismatch with base version. Stopping the pipeline."
                 }
