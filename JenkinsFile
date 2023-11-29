@@ -1,125 +1,62 @@
-pipeline {
-    agent any
-    tools {
-        maven 'Maven 3.9.4'
-        jdk 'JDK17'
-    }
-    environment {
-        NAMESPACE = '9334-sit1-ifmis'
-        BASE_VERSION_FILE = 'baseversion.txt'
-        BUILD_VERSION_FILE = 'buildversion.txt'
-    }
+stage('Increment Version and Build') {
+    steps {
+        script {
+            def releaseType = params.releaseType
+            echo "Release type is: ${releaseType}"
 
-    parameters {
-        choice(name: 'releaseType', choices: ['none', 'major', 'minor', 'patch'], description: 'Select the release type.')
-    }
+            // Read the base version from the environment
+            def baseVersionFile = "${WORKSPACE}/${BASE_VERSION_FILE}"
+            def baseVersion = env.BASE_VERSION
+            echo "Base version: ${baseVersion}"
 
-    stages {
-        stage('Initialize') {
-            steps {
-                script {
-                    // Check if the base version file exists
-                    def baseVersionFile = "${WORKSPACE}/${BASE_VERSION_FILE}"
-                    def baseVersion
+            def currentVersion = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'version\']/text()" pom.xml', returnStdout: true).trim()
+            echo "Current version: ${currentVersion}"
 
-                    if (!fileExists(baseVersionFile)) {
-                        // For the first build, set the base version to '0.0.1'
-                        echo "Initializing base version to '0.0.1'..."
-                        baseVersion = '0.0.1'
-                        // Create or update the base version file
-                        writeFile file: baseVersionFile, text: baseVersion
-                    } else {
-                        // For subsequent builds, read the base version from the file
-                        baseVersion = readFile(baseVersionFile).trim()
-                        echo "Base version read from file: ${baseVersion}"
-                    }
+            // Increment the version based on the release type
+            def newVersion
+            if (releaseType == 'none') {
+                // No increment for 'none'
+                newVersion = currentVersion
+            } else {
+                // Increment major, minor, or patch based on the release type
+                def (baseMajor, baseMinor, basePatch) = baseVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)/, '$1 $2 $3').split(' ')
+                def (currentMajor, currentMinor, currentPatch) = currentVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)/, '$1 $2 $3').split(' ')
 
-                    // Read the build number from the file and store it in the environment
-                    def buildNumberFile = "${WORKSPACE}/buildNumber.txt"
-                    if (!fileExists(buildNumberFile)) {
-                        echo "Initializing build number..."
-                        writeFile file: buildNumberFile, text: '0'
-                    }
-
-                    def buildNumber = readFile(buildNumberFile).trim()
-                    echo "Build number: ${buildNumber}"
-                    env.BUILD_NUMBER = buildNumber
-
-                    // Set the base version in the environment
-                    env.BASE_VERSION = baseVersion
-                    echo "Base version: ${baseVersion}"
+                if (releaseType == 'major' && currentMajor.toInteger() == baseMajor.toInteger() + 1) {
+                    newVersion = "${(baseMajor.toInteger() + 1)}.0.0"
+                } else if (releaseType == 'minor' && currentMinor.toInteger() == baseMinor.toInteger() + 1) {
+                    newVersion = "${baseMajor}.${(baseMinor.toInteger() + 1)}.0"
+                } else if (releaseType == 'patch' && currentPatch.toInteger() == basePatch.toInteger() + 1) {
+                    newVersion = "${baseMajor}.${baseMinor}.${(basePatch.toInteger() + 1)}"
+                } else {
+                    error "Invalid release type or mismatch with base version. Stopping the pipeline."
                 }
             }
-        }
 
-        stage('Increment Version and Build') {
-            steps {
-                script {
-                    def releaseType = params.releaseType
-                    echo "Release type is: ${releaseType}"
+            // Read and increment the build number
+            def buildNumberFile = "${WORKSPACE}/buildNumber.txt"
+            def buildNumber = readFile(buildNumberFile).trim()
+            buildNumber = (buildNumber.toInteger() + 1).toString()
+            env.BUILD_NUMBER = buildNumber
 
-                    // Read the base version from the environment
-                    def baseVersion = env.BASE_VERSION
-                    echo "Base version: ${baseVersion}"
+            if (releaseType != "none") {
+                newVersion += "-v${buildNumber}"
+                echo "New version: ${newVersion}"
+            }
 
-                    def currentVersion = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'version\']/text()" pom.xml', returnStdout: true).trim()
-                    echo "Current version: ${currentVersion}"
+            // Update the base version
+            env.BASE_VERSION = newVersion
+            echo "Base version updated to: ${newVersion}"
 
-                    // Increment the version based on the release type
-                    def newVersion
-                    if (releaseType == 'none') {
-                        // No increment for 'none'
-                        newVersion = currentVersion
-                    } else {
-                        // Increment major, minor, or patch based on the release type
-                        def (baseMajor, baseMinor, basePatch) = baseVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)/, '$1 $2 $3').split(' ')
-                        def (currentMajor, currentMinor, currentPatch) = currentVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)/, '$1 $2 $3').split(' ')
+            // Write the new version and updated build number back to the files
+            writeFile file: "${BUILD_VERSION_FILE}", text: newVersion
+            writeFile file: buildNumberFile, text: buildNumber
+            echo "Build version and build number updated in ${BUILD_VERSION_FILE} and ${buildNumberFile}"
 
-                        if (releaseType == 'major' && currentMajor.toInteger() == baseMajor.toInteger() + 1) {
-                            newVersion = "${(baseMajor.toInteger() + 1)}.0.0"
-                        } else if (releaseType == 'minor' && currentMinor.toInteger() == baseMinor.toInteger() + 1) {
-                            newVersion = "${baseMajor}.${(baseMinor.toInteger() + 1)}.0"
-                        } else if (releaseType == 'patch' && currentPatch.toInteger() == basePatch.toInteger() + 1) {
-                            newVersion = "${baseMajor}.${baseMinor}.${(basePatch.toInteger() + 1)}"
-                        } else {
-                            error "Invalid release type or mismatch with base version. Stopping the pipeline."
-                        }
-                    }
-
-                    // Read and increment the build number
-                    def buildNumberFile = "${WORKSPACE}/buildNumber.txt"
-                    def buildNumber = readFile(buildNumberFile).trim()
-                    buildNumber = (buildNumber.toInteger() + 1).toString()
-                    env.BUILD_NUMBER = buildNumber
-
-                    if (releaseType != "none") {
-                        newVersion += "-v${buildNumber}"
-                        echo "New version: ${newVersion}"
-
-                        // Compare new version with current version
-                        if (newVersion == currentVersion) {
-                            error "New version (${newVersion}) matches the current version (${currentVersion}). Stopping the pipeline."
-                        }
-                    }
-
-                    // Update the base version
-                    env.BASE_VERSION = newVersion
-                    echo "Base version updated to: ${newVersion}"
-
-                    // Write the new version and updated build number back to the files
-                    writeFile file: "${BUILD_VERSION_FILE}", text: newVersion
-                    writeFile file: buildNumberFile, text: buildNumber
-                    echo "Build version and build number updated in ${BUILD_VERSION_FILE} and ${buildNumberFile}"
-
-                    // Add a conditional check to abort the pipeline if the versions match
-                    if (newVersion == currentVersion) {
-                        currentBuild.result = 'ABORTED'
-                        error "Pipeline aborted due to version match."
-                    }
-                }
+            // Compare new version with current version
+            if (newVersion == currentVersion) {
+                error "New version matches current version. Stopping the pipeline."
             }
         }
-
-       
     }
 }
