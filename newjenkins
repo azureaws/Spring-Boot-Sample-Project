@@ -22,13 +22,15 @@ pipeline {
 
     usernamePassword(credentialsId: 'deploy_9334', passwordVariable: 'REPO_PWD', usernameVariable: 'REPO_USER')
                                    ]) 
-                    ]) {
-                        sh '''            
-                            mvn -X clean package install -U -s ./settings.xml -DeirRepo.user=${REPO_USER} -DeirRepo.pwd=${REPO_PWD}
-                            ls -la
-                        '''
+                    {                   
+                   
+                    sh '''            
+                   
+                    echo "Maven build"
+                    ls -la
+                    '''
                     }
-                }
+               }
             }
         }
 
