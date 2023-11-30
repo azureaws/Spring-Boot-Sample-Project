@@ -80,9 +80,7 @@ pipeline {
                     writeFile file: baseVersionFile, text: baseVersion
                     echo "Base version updated in ${BASE_VERSION_FILE}"
 
-                    // Update the version in the pom.xml file
-                    sh "mvn versions:set -DnewVersion=${pomVersion}"
-                    echo "POM version updated to: ${pomVersion}"
+                    
                 }
             }
         }
