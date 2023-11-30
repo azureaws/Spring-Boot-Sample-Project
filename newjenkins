@@ -39,7 +39,7 @@ pipeline {
                 script {
                     // Read the version from pom.xml
                     def pomVersion = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'version\']/text()" pom.xml', returnStdout: true).trim()
-                    pomVersion = pomVersion.replaceAll('-snapshot', '')
+                    pomVersion = pomVersion.replaceAll('-SNAPSHOT', '')
                     echo "POM version: ${pomVersion}"
 
                     // Check if the base version file exists
@@ -56,15 +56,14 @@ pipeline {
                         echo "Base version read from file: ${baseVersion}"
                     }
 
-                    // Extract major, minor, patch, and build number from the current version
-                    def (major, minor, patch, buildNumber) = pomVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)(?:-(\d+))?(-snapshot)?/, '$1 $2 $3 $4').split(' ')
-                    // Replace -SNAPSHOT in the buildNumber
-                    buildNumber = buildNumber.replaceAll('-SNAPSHOT', '')
-                    buildNumber = buildNumber.replaceAll(/^\\./, '')
+                    // Extract major, minor, patch, and build number from the modified pomVersion
+                    def (major, minor, patch, buildNumber) = pomVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)(?:-(\d+))?/, '$1 $2 $3 $4').split(' ')
+
                     echo "Major: ${major}"
                     echo "Minor: ${minor}"
                     echo "Patch: ${patch}"
                     echo "Build Number: ${buildNumber}"
+
                     
                     // Set the base version to '1.0.0.1'
                     baseVersion = '1.0.0.1'
