@@ -85,7 +85,7 @@ pipeline {
                     def releaseType = params.releaseType
                     echo "Release type is: ${releaseType}"
 
-                    def newVersion
+                    
                     def buildNumberFile = "${WORKSPACE}/buildNumber.txt"
                     
                     if (releaseType == 'build') {
