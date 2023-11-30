@@ -7,7 +7,7 @@ pipeline {
     environment {
         NAMESPACE = '9334-dev1-ifmis'
         BASE_VERSION_FILE = 'baseversion.txt'
-        BUILD_VERSION_FILE = 'buildversion.txt'
+        BUILD_VERSION_FILE = 'buildNumber.txt'
     }
 
     stages {
@@ -49,7 +49,12 @@ pipeline {
                     }
 
                     // Read the build number from the pom.xml
-                    def buildNumber = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'buildNumber\']/text()" pom.xml', returnStdout: true).trim()
+                    def buildVersionFile = "${WORKSPACE}/${BUILD_VERSION_FILE}"
+
+                    // Read the build number from buildNumber.txt if it exists, else read from pom.xml
+                    def buildNumber = new File(buildNumberFile).exists() ? readFile(buildNumberFile).trim() :
+                                      sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'buildNumber\']/text()" pom.xml', returnStdout: true).trim()
+
 
                     // Increment the build number if the release type is 'build'
                     if (params.releaseType == 'build') {
@@ -116,10 +121,15 @@ pipeline {
                         } else {
                             error "Invalid release type. Stopping the pipeline."
                         }
-                    // Write the new version and updated build number back to the files
-                    writeFile file: "${BUILD_VERSION_FILE}", text: newVersion
-                    echo "Build version and base version updated in ${BUILD_VERSION_FILE} and ${BASE_VERSION_FILE}"
+                    
+                    // Set the base version in the environment
+                    env.BASE_VERSION = baseVersion
+                    echo "Base version: ${baseVersion}"
 
+                    // Write the base version, build number, and build version back to the files for subsequent builds
+                    writeFile file: baseVersionFile, text: baseVersion
+                    writeFile file: "${WORKSPACE}/buildNumber.txt", text: buildNumber
+                    echo "Base version updated in ${BASE_VERSION_FILE}, build number updated in ${WORKSPACE}/buildNumber.txt"
                     // Compare new version with current version
                     if (baseVersion == pomVersion) {
                         error "Base version matches current version. Stopping the pipeline."
