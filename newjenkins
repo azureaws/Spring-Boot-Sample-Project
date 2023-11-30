@@ -2,7 +2,7 @@ pipeline {
     agent { label 'unix' }
     tools {
         maven 'Maven 3.9.4'
-        jdk 'AdoptiumOpenJDK 17.0.2_8'
+        jdk 'JDK 17'
     }
     environment {
         NAMESPACE = '9334-dev1-ifmis'
