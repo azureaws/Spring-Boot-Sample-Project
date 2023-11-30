@@ -11,7 +11,7 @@ pipeline {
     }
 
     parameters {
-        choice(name: 'releaseType', choices: ['major', 'minor', 'patch', 'none'], description: 'Select the release type.')
+        choice(name: 'releaseType', choices: ['major', 'minor', 'patch', 'build'], description: 'Select the release type.')
     }
 
     stages {
