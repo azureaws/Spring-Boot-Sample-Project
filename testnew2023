@@ -121,7 +121,7 @@ pipeline {
                     echo "Build version and base version updated in ${BUILD_VERSION_FILE} and ${BASE_VERSION_FILE}"
 
                     // Compare new version with current version
-                    if (newVersion == pomVersion) {
+                    if (baseVersion == pomVersion) {
                         error "New version matches current version. Stopping the pipeline."
                     }
                 }
