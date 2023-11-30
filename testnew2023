@@ -85,19 +85,34 @@ pipeline {
                     def releaseType = params.releaseType
                     echo "Release type is: ${releaseType}"
 
-                    // Increment build number and append to version for 'build'
+                    def newVersion
+                    def buildNumberFile = "${WORKSPACE}/buildNumber.txt"
+                    
                     if (releaseType == 'build') {
                         // Append build number to the current version for 'build' release type
                         newVersion = "${pomVersion}.${env.BUILD_NUMBER}"
                         echo "New version: ${newVersion}"
-                    } else if (releaseType == 'minor' || releaseType == 'patch') {
-                        // Append build number to the current version for 'minor' or 'patch' release types
-                        newVersion = "${pomVersion}.${env.BUILD_NUMBER}"
-                        echo "New version: ${newVersion}"
-                    } else {
-                        error "Invalid release type. Stopping the pipeline."
-                    }
-
+                    } else if (releaseType == 'major' || releaseType == 'minor' || releaseType == 'patch') {
+                        def (baseMajor, baseMinor, basePatch) = baseVersion.split('\\.')
+                        def (currentMajor, currentMinor, currentPatch) = pomVersion.split('\\.')
+                    
+                        if (releaseType == 'major' && currentMajor.toInteger() == baseMajor.toInteger() + 1) {
+                            newVersion = "${(baseMajor.toInteger() + 1)}.0.0"
+                        } else if (releaseType == 'minor' && currentMinor.toInteger() == baseMinor.toInteger() + 1) {
+                            newVersion = "${baseMajor}.${(baseMinor.toInteger() + 1)}.0"
+                        } else if (releaseType == 'patch' && currentPatch.toInteger() == basePatch.toInteger() + 1) {
+                            newVersion = "${baseMajor}.${baseMinor}.${(basePatch.toInteger() + 1)}"
+                        } else {
+                            error "Invalid release type or mismatch with base version. Stopping the pipeline."
+                        }
+                    
+                            // Read and increment the build number
+                            def buildNumber = readFile(buildNumberFile).trim()
+                            buildNumber = (buildNumber.toInteger() + 1).toString()
+                            env.BUILD_NUMBER = buildNumber
+                        } else {
+                            error "Invalid release type. Stopping the pipeline."
+                        }
                     // Write the new version and updated build number back to the files
                     writeFile file: "${BUILD_VERSION_FILE}", text: newVersion
                     echo "Build version and base version updated in ${BUILD_VERSION_FILE} and ${BASE_VERSION_FILE}"
