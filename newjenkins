@@ -39,6 +39,7 @@ pipeline {
                 script {
                     // Read the version from pom.xml
                     def pomVersion = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'version\']/text()" pom.xml', returnStdout: true).trim()
+                    pomVersion = pomVersion.replaceAll('-snapshot', '')
                     echo "POM version: ${pomVersion}"
 
                     // Check if the base version file exists
