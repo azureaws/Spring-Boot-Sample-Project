@@ -58,6 +58,8 @@ pipeline {
 
                     // Extract major, minor, patch, and build number from the current version
                     def (major, minor, patch, buildNumber) = pomVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)(?:-(\d+))?(-snapshot)?/, '$1 $2 $3 $4').split(' ')
+                    // Replace -SNAPSHOT in the buildNumber
+                    buildNumber = buildNumber.replaceAll('-SNAPSHOT', '')
                     echo "Major: ${major}"
                     echo "Minor: ${minor}"
                     echo "Patch: ${patch}"
