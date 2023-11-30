@@ -1,0 +1,219 @@
+pipeline {
+    agent { label 'unix' }
+    tools {
+        maven 'Maven 3.9.4'
+        jdk 'AdoptiumOpenJDK 17.0.2_8'
+    }
+    environment {
+        NAMESPACE = '9334-dev1-ifmis'
+        BASE_VERSION_FILE = 'baseversion.txt'
+        BUILD_VERSION_FILE = 'buildversion.txt'
+    }
+
+    parameters {
+        choice(name: 'releaseType', choices: ['major', 'minor', 'patch', 'none'], description: 'Select the release type.')
+    }
+
+    stages {
+        stage('Maven Build') {
+            steps {
+                script {
+                    withCredentials([
+                        usernamePassword(credentialsId: 'deploy_artifactory_9334', passwordVariable: 'ART_PASS', usernameVariable: 'ART_USER'),
+                        usernamePassword(credentialsId: 'deploy_artifactory_9334', passwordVariable: 'REPO_PWD', usernameVariable: 'REPO_USER')
+                    ]) {
+                        sh '''            
+                            mvn -X clean package install -U -s ./settings.xml -DeirRepo.user=${REPO_USER} -DeirRepo.pwd=${REPO_PWD}
+                            ls -la
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Initialize') {
+            steps {
+                script {
+                    // Read the version from pom.xml
+                    def pomVersion = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'version\']/text()" pom.xml', returnStdout: true).trim()
+                    echo "POM version: ${pomVersion}"
+
+                    // Check if the base version file exists
+                    def baseVersionFile = "${WORKSPACE}/${BASE_VERSION_FILE}"
+                    def baseVersion
+
+                    if (!fileExists(baseVersionFile)) {
+                        // For the first build, set the base version to '1.0.0.1'
+                        echo "Initializing base version to '1.0.0.1'..."
+                        baseVersion = '1.0.0.1'
+                    } else {
+                        // For subsequent builds, read the base version from the file
+                        baseVersion = readFile(baseVersionFile).trim()
+                        echo "Base version read from file: ${baseVersion}"
+                    }
+
+                    // Extract major, minor, patch, and build number from the current version
+                    def (major, minor, patch, buildNumber) = pomVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)(?:-(\d+))?(-snapshot)?/, '$1 $2 $3 $4').split(' ')
+
+                    // Set the base version to '1.0.0.1'
+                    baseVersion = '1.0.0.1'
+
+                    // If a build number is present, update the environment
+                    if (buildNumber) {
+                        // Remove -snapshot from the version
+                        pomVersion = "${baseVersion}.${buildNumber}"
+
+                        // Write the build number to the buildNumber.txt file
+                        def buildNumberFile = "${WORKSPACE}/buildNumber.txt"
+                        writeFile file: buildNumberFile, text: buildNumber
+                        echo "Build number updated in ${buildNumberFile}"
+                    }
+
+                    // Set the base version in the environment
+                    env.BASE_VERSION = baseVersion
+                    echo "Base version: ${baseVersion}"
+
+                    // Write the base version back to the file for subsequent builds
+                    writeFile file: baseVersionFile, text: baseVersion
+                    echo "Base version updated in ${BASE_VERSION_FILE}"
+
+                    // Update the version in the pom.xml file
+                    sh "mvn versions:set -DnewVersion=${pomVersion}"
+                    echo "POM version updated to: ${pomVersion}"
+                }
+            }
+        }
+
+        stage('Increment Version and Build') {
+            steps {
+                script {
+                    def releaseType = params.releaseType
+                    echo "Release type is: ${releaseType}"
+
+                    // Read the base version from the environment
+                    def baseVersionFile = "${WORKSPACE}/${BASE_VERSION_FILE}"
+                    def baseVersion = env.BASE_VERSION
+                    echo "Base version: ${baseVersion}"
+
+                    def currentVersion = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'version\']/text()" pom.xml', returnStdout: true).trim()
+                    echo "Current version: ${currentVersion}"
+
+                    // Increment the version based on the release type
+                    def newVersion
+                    if (releaseType == 'build') {
+                        def suffix = env.BUILD_SUFFIX ?: 0
+                        suffix++
+                        // Add the incremented suffix to the current version
+                        newVersion = "${currentVersion}.${suffix}"
+                        echo "New version: ${newVersion}"
+                    } else {
+                        // Increment major, minor, or patch based on the release type
+                        def (baseMajor, baseMinor, basePatch) = baseVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)/, '$1 $2 $3').split(' ')
+                        def (currentMajor, currentMinor, currentPatch) = currentVersion.replaceAll(/(\d+)\.(\d+)\.(\d+)/, '$1 $2 $3').split(' ')
+                        basePatch = basePatch.split('\\.')[0]
+                        // Increment major, minor, or patch based on the release type
+                        if (releaseType == 'major' && currentMajor.toInteger() == baseMajor.toInteger() + 1) {
+                            newVersion = "${(baseMajor.toInteger() + 1)}.0.0"
+                        } else if (releaseType == 'minor' && currentMinor.toInteger() == baseMinor.toInteger() + 1) {
+                            newVersion = "${baseMajor}.${(baseMinor.toInteger() + 1)}.0"
+                        } else if (releaseType == 'patch' && currentPatch.toInteger() == basePatch.toInteger() + 1) {
+                            newVersion = "${baseMajor}.${baseMinor}.${(basePatch.toInteger() + 1)}"
+                        } else {
+                            error "Invalid release type or mismatch with the base version. Stopping the pipeline."
+                        }
+                    }
+
+                    // Read and increment the build number
+                    def buildNumberFile = "${WORKSPACE}/buildNumber.txt"
+                    def buildNumber = readFile(buildNumberFile).trim()
+                    buildNumber = (buildNumber.toInteger() + 1).toString()
+                    env.BUILD_NUMBER = buildNumber
+
+                    if (releaseType != "none") {
+                        newVersion += ".${buildNumber}"
+                        echo "New version: ${newVersion}"
+                    }
+
+                    // Update the base version for the next build
+                    env.BASE_VERSION = newVersion
+                    echo "Base version updated to: ${newVersion}"
+
+                    // Write the new version and updated build number back to the files
+                    writeFile file: "${BUILD_VERSION_FILE}", text: newVersion
+                    writeFile file: baseVersionFile, text: newVersion // Write the new base version to the file
+                    writeFile file: buildNumberFile, text: buildNumber
+                    echo "Build version, base version, and build number updated in ${BUILD_VERSION_FILE}, ${BASE_VERSION_FILE}, and ${buildNumberFile}"
+
+                    // Compare the new version with the current version
+                    if (newVersion == currentVersion) {
+                        error "New version matches the current version. Stopping the pipeline."
+                    }
+                }
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                script {
+                    def isPodmanBuildNeeded = fileExists("${WORKSPACE}/Dockerfile")
+                    def newVersion = readFile "${BUILD_VERSION_FILE}"
+                    echo "Using the new version in Docker Build stage: ${newVersion}"
+                    if (isPodmanBuildNeeded) {
+                        echo "Building Docker image with Podman..."
+                        // Use the module
+                        DOCKER_IMAGE_NAME = "artifactory.usps.gov/eir-9334-docker/usps/ifmis-department-location-service-out"
+
+                        // Set environment variables for proxy and temporary directory
+                        withCredentials([usernamePassword(credentialsId: 'deploy_artifactory_9334', passwordVariable: 'ART_PASS', usernameVariable: 'ART_USER')]) {
+                            withEnv(['HTTPS_PROXY=proxy.usps.gov:8080', "TMPDIR=${WORKSPACE}"]) {
+                                echo " "
+                                echo "##########################################################################"
+                                echo "Check images before"
+                                echo "##########################################################################"
+                                sh 'podman images'
+
+                                echo " "
+                                echo "##########################################################################"
+                                echo "Login to Artifactory"
+                                echo "##########################################################################"
+                                sh "podman login -u $ART_USER -p $ART_PASS artifactory.usps.gov"
+
+                                echo " "
+                                echo "##########################################################################"
+                                echo "Build image"
+                                echo "##########################################################################"
+                                sh "podman build -t ${DOCKER_IMAGE_NAME}:${newVersion} . --format docker"
+
+                                echo " "
+                                echo "##########################################################################"
+                                echo "Tag image"
+                                echo "##########################################################################"
+                                sh "podman tag ${DOCKER_IMAGE_NAME}:${newVersion} ${DOCKER_IMAGE_NAME}:${newVersion}"
+
+                                echo " "
+                                echo "##########################################################################"
+                                echo "Push image"
+                                echo "##########################################################################"
+                                sh "podman push -f v2s2 ${DOCKER_IMAGE_NAME}:${newVersion} --format v2s2"
+
+                                echo " "
+                                echo "##########################################################################"
+                                echo "Logout from Artifactory"
+                                echo "##########################################################################"
+                                sh 'podman logout --all'
+
+                                echo " "
+                                echo "##########################################################################"
+                                echo "Images after"
+                                echo "##########################################################################"
+                                sh 'podman images'
+                            }
+                        }
+                    } else {
+                        echo "No Docker build needed as Dockerfile or source files haven't changed."
+                    }
+                }
+            }
+        }
+    }
+}
