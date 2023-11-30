@@ -63,7 +63,7 @@ pipeline {
                     echo "Minor: ${minor}"
                     echo "Patch: ${patch}"
                     echo "Build Number: ${buildNumber}"
-
+                    buildNumber = buildNumber.replaceFirst(/^\./, '')
                     
                     // Set the base version to '1.0.0.1'
                     baseVersion = '1.0.0.1'
