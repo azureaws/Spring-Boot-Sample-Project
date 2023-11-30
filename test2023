@@ -14,7 +14,6 @@ pipeline {
         stage('Maven Build') {
             steps {
                 script {
-                    withCredentials([
                         withCredentials([
 
     usernamePassword(credentialsId: 'deploy_9334', passwordVariable: 'REPO_PWD', usernameVariable: 'REPO_USER')
