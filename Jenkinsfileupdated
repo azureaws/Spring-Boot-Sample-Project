@@ -95,7 +95,7 @@ pipeline {
                 def suffix = env.BUILD_SUFFIX ?: 0
                 suffix++
                 // Add the incremented suffix to the current version
-                def newVersion = "${currentMajor}.${currentMinor}.${currentPatch}.${suffix}"
+                newVersion = "${currentMajor}.${currentMinor}.${currentPatch}.${suffix}"
                 echo "New version: ${newVersion}"
             } else {
                 // Increment major, minor, or patch based on the release type
