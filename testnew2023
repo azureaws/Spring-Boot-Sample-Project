@@ -77,6 +77,8 @@ pipeline {
                     echo "Release type is: ${releaseType}"
 
                     def buildNumberFile = "${WORKSPACE}/buildNumber.txt"
+                    def (baseMajor, baseMinor, basePatch) = baseVersion.split('\\.')
+                    def (currentMajor, currentMinor, currentPatch) = pomVersion.split('\\.')
 
                     if (releaseType == 'build') {
                         // Append build number to the current version for 'build' release type
@@ -111,7 +113,6 @@ pipeline {
                     writeFile file: buildVersionFile, text: newVersion
                     writeFile file: baseVersionFile, text: newVersion
                     echo "New version written to ${buildVersionFile}"
-                    // Compare new version with current version
                     if (baseMajor == currentMajor && baseMinor == currentMinor && basePatch == currentPatch) {
                         error "New version matches current version. Stopping the pipeline."
                     }
