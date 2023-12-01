@@ -97,7 +97,7 @@ pipeline {
                     def newVersion
                     def releaseType = params.releaseType
                     echo "Release type is: ${releaseType}"
-
+                    def buildNumber
 
                     if (releaseType == 'build') {
                         // Append build number to the current version for 'build' release type
