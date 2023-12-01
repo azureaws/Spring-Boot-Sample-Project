@@ -1,32 +1,47 @@
 pipeline {
-    agent { label 'unix' }
+    agent any
     tools {
         maven 'Maven 3.9.4'
-        jdk 'AdoptiumOpenJDK 17.0.2_8'
+        jdk 'JDK17'
     }
     environment {
-        NAMESPACE = '9334-dev1-ifmis'
+        NAMESPACE = '9334-sit1-ifmis'
         BASE_VERSION_FILE = 'baseversion.txt'
-        BUILD_NUMBER_FILE = "${WORKSPACE}/buildNumber.txt"
+        BUILD_VERSION_FILE = 'buildversion.txt'
     }
 
-    stages {
-        stage('Maven Build') {
+    pipeline {
+    agent any
+    tools {
+        maven 'Maven 3.9.4'
+        jdk 'JDK17'
+    }
+    environment {
+        NAMESPACE = '9334-sit1-ifmis'
+        BASE_VERSION_FILE = 'baseversion.txt'
+        BUILD_VERSION_FILE = 'buildversion.txt'
+    }
+
+  
+   stages {
+      stage('Maven Build') {
             steps {
                 script {
                     withCredentials([
-                        usernamePassword(credentialsId: 'deploy_artifactory_9334', passwordVariable: 'ART_PASS', usernameVariable: 'ART_USER'),
-                        usernamePassword(credentialsId: 'deploy_artifactory_9334', passwordVariable: 'REPO_PWD', usernameVariable: 'REPO_USER')
-                    ]) {
-                        sh '''            
-                            mvn -X clean package install -U -s ./settings.xml -DeirRepo.user=${REPO_USER} -DeirRepo.pwd=${REPO_PWD}
-                            ls -la
-                        '''
+
+    usernamePassword(credentialsId: 'deploy_9334', passwordVariable: 'REPO_PWD', usernameVariable: 'REPO_USER')
+                                   ]) 
+                    {                   
+                   
+                    sh '''            
+                   
+                    echo "Maven build"
+                    ls -la
+                    '''
                     }
-                }
+               }
             }
         }
-
         
         stage('Initialize') {
             steps {
