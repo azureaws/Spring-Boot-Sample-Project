@@ -108,6 +108,7 @@ pipeline {
                     // Write newVersion to build_version.txt
                     def buildVersionFile = "${WORKSPACE}/build_version.txt"
                     writeFile file: buildVersionFile, text: newVersion
+                    writeFile file: baseVersionFile, text: newVersion
                     echo "New version written to ${buildVersionFile}"
                     // Compare new version with current version
                     if (baseVersion == pomVersion) {
