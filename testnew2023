@@ -36,11 +36,16 @@ pipeline {
                     } else {
                         buildNumber = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'buildNumber\']/text()" pom.xml', returnStdout: true).trim()
                     }
-
+                    def (baseMajor, baseMinor, basePatch) = baseVersion.split('\\.')
+                    def (currentMajor, currentMinor, currentPatch) = pomVersion.split('\\.')
                     // Increment the build number if the release type is 'build'
                     if (params.releaseType == 'build') {
-                     if (baseVersion == pomVersion) {
-                       error "Base version matches current version. Stopping the pipeline."
+                     if (
+                        (baseMajor == currentMajor) &&
+                        (baseMinor == currentMinor) &&
+                        (basePatch == currentPatch)
+                    ) {
+                        error "Base version components match current version components. Stopping the pipeline."
                     }
                         buildNumber = (buildNumber.toInteger() + 1).toString()
                         echo "Incrementing build number to: ${buildNumber}"
