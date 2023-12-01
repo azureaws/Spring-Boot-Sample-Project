@@ -73,6 +73,9 @@ pipeline {
                     def buildNumberFile = "${WORKSPACE}/buildNumber.txt"
 
                     if (releaseType == 'build') {
+                        // Read  the incremented build number
+                        def buildNumber = readFile(buildNumberFile).trim()
+                        env.BUILD_NUMBER = buildNumber
                         // Append build number to the current version for 'build' release type
                         newVersion = "${pomVersion}.${env.BUILD_NUMBER}"
                         echo "New version: ${newVersion}"
