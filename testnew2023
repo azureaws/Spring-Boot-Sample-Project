@@ -107,7 +107,10 @@ pipeline {
                     // Write the base version, build number, and build version back to the files for subsequent builds
                     writeFile file: buildNumberFile, text: buildNumber
                     echo "Base version updated in ${BASE_VERSION_FILE}, build number updated in ${WORKSPACE}/buildNumber.txt"
-
+                    // Write newVersion to build_version.txt
+                    def buildVersionFile = "${WORKSPACE}/build_version.txt"
+                    writeFile file: buildVersionFile, text: newVersion
+                    echo "New version written to ${buildVersionFile}"
                     // Compare new version with current version
                     if (baseVersion == pomVersion) {
                         error "Base version matches current version. Stopping the pipeline."
@@ -120,7 +123,7 @@ pipeline {
             steps {
                 script {
                     def isPodmanBuildNeeded = fileExists("${WORKSPACE}/Dockerfile")
-                    def newVersion = readFile(BUILD_NUMBER_FILE)
+                    def newVersion = readFile("${WORKSPACE}/build_version.txt")
                     echo "Using the new version in Docker Build stage: ${newVersion}"
                     if (isPodmanBuildNeeded) {
                         echo "my docker logic"
