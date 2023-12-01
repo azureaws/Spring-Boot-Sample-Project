@@ -112,8 +112,8 @@ pipeline {
                     writeFile file: baseVersionFile, text: newVersion
                     echo "New version written to ${buildVersionFile}"
                     // Compare new version with current version
-                    if (baseVersion == pomVersion) {
-                     error "New version matches current version. Stopping the pipeline."
+                    if (baseMajor == currentMajor && baseMinor == currentMinor && basePatch == currentPatch) {
+                        error "New version matches current version. Stopping the pipeline."
                     }
                 }
             }
