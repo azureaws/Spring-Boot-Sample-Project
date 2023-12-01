@@ -101,7 +101,7 @@ pipeline {
                     }
 
                     // Set the base version in the environment
-                    env.BASE_VERSION = baseVersion
+                    env.BASE_VERSION = newVersion
                     echo "Base version: ${baseVersion}"
 
                     
