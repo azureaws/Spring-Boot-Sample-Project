@@ -68,10 +68,17 @@ pipeline {
                         echo "Incrementing build number to: ${buildNumber}"
                         writeFile file: BUILD_NUMBER_FILE, text: buildNumber
                     }
-
-                    // Set the build number in the environment
-                    env.BUILD_NUMBER = buildNumber
-                    echo "Build number: ${buildNumber}"
+                    if (params.releaseType == 'firstimebuild') {
+                        if (
+                        (baseMajor == currentMajor) &&
+                        (baseMinor == currentMinor) &&
+                        (basePatch == currentPatch)
+                    ) {
+                        error "Base version components match current version components. Stopping the pipeline."
+                    }
+                        
+                        writeFile file: BUILD_NUMBER_FILE, text: buildNumber
+                    }
 
                     // Set the base version in the environment
                     env.BASE_VERSION = baseVersion
@@ -120,6 +127,10 @@ pipeline {
                         buildNumber3 = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'buildNumber\']/text()" pom.xml', returnStdout: true).trim()
                     }
                     if (releaseType == 'build') {
+                        // Append build number to the current version for 'build' release type
+                        newVersion = "${pomVersion}.${env.BUILD_NUMBER}"
+                        echo "New version: ${newVersion}"
+                    } else if (releaseType == 'firsttimebuild') {
                         // Append build number to the current version for 'build' release type
                         newVersion = "${pomVersion}.${env.BUILD_NUMBER}"
                         echo "New version: ${newVersion}"
