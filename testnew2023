@@ -66,7 +66,8 @@ pipeline {
                     pomVersion = pomVersion.replaceAll('-SNAPSHOT', '')
                     echo "POM version: ${pomVersion}"
 
-                    // Read the base version from the environment
+                      // Read the base version from the environment
+                    def baseVersionFile = "${WORKSPACE}/${BASE_VERSION_FILE}"
                     def baseVersion = env.BASE_VERSION
                     echo "Base version: ${baseVersion}"
 
