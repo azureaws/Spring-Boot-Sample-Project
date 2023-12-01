@@ -28,7 +28,9 @@ pipeline {
                         baseVersion = readFile(baseVersionFile).trim()
                         echo "Base version read from file: ${baseVersion}"
                     }
-
+                    // Compare new version with current version
+                    if (baseVersion == currentVersion) {
+                     error "New version matches current version. Stopping the pipeline."
                     // Read the build number from buildNumber.txt if it exists, else read from pom.xml
                     def buildNumber
                     if (fileExists(BUILD_NUMBER_FILE)) {
