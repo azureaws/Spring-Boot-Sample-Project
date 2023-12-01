@@ -146,7 +146,7 @@ pipeline {
                             echo "Build number: ${buildNumber}"
                             // Append build number to the current version for 'patch' release type
                             newVersion = "${pomVersion}.${env.BUILD_NUMBER}"
-                            echo "New version: ${newVersion}
+                            echo "New version: ${newVersion}"
                         } else {
                             error "Invalid release type or mismatch with base version. Stopping the pipeline."
                         }
