@@ -120,7 +120,7 @@ pipeline {
             steps {
                 script {
                     def isPodmanBuildNeeded = fileExists("${WORKSPACE}/Dockerfile")
-                    def newVersion = readFile("${WORKSPACE}/buildNumber.txt")
+                    def newVersion = readFile(BUILD_NUMBER_FILE)
                     echo "Using the new version in Docker Build stage: ${newVersion}"
                     if (isPodmanBuildNeeded) {
                         echo "my docker logic"
