@@ -134,7 +134,7 @@ pipeline {
                             echo "Build number: ${buildNumber}"
                             // Append build number to the current version for 'minor' release type
                             newVersion = "${pomVersion}.${env.BUILD_NUMBER}"
-                            echo "New version: ${newVersion}
+                            echo "New version: ${newVersion}"
                         } else if (releaseType == 'patch' && currentPatch.toInteger() == basePatch.toInteger() + 1) {
                             newVersion = "${baseMajor}.${baseMinor}.${(basePatch.toInteger() + 1)}"
                             // Increment the base version for patch release
