@@ -39,6 +39,9 @@ pipeline {
 
                     // Increment the build number if the release type is 'build'
                     if (params.releaseType == 'build') {
+                     if (baseVersion == pomVersion) {
+                       error "Base version matches current version. Stopping the pipeline."
+                    }
                         buildNumber = (buildNumber.toInteger() + 1).toString()
                         echo "Incrementing build number to: ${buildNumber}"
                         writeFile file: BUILD_NUMBER_FILE, text: buildNumber
