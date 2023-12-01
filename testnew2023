@@ -104,9 +104,8 @@ pipeline {
                     env.BASE_VERSION = baseVersion
                     echo "Base version: ${baseVersion}"
 
-                    // Write the base version, build number, and build version back to the files for subsequent builds
-                    writeFile file: buildNumberFile, text: buildNumber
-                    echo "Base version updated in ${BASE_VERSION_FILE}, build number updated in ${WORKSPACE}/buildNumber.txt"
+                    
+                    echo "Base version updated in ${BASE_VERSION_FILE}"
                     // Write newVersion to build_version.txt
                     def buildVersionFile = "${WORKSPACE}/build_version.txt"
                     writeFile file: buildVersionFile, text: newVersion
