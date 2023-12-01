@@ -5,8 +5,9 @@ pipeline {
         jdk 'AdoptiumOpenJDK 17.0.2_8'
     }
     environment {
-        NAMESPACE = '9334-dev1-ifmis'
+        NAMESPACE = '9334-sit1-ifmis'
         BASE_VERSION_FILE = 'baseversion.txt'
+        BUILD_VERSION_FILE = 'buildversion.txt'
         BUILD_NUMBER_FILE = "${WORKSPACE}/buildNumber.txt"
     }
 
@@ -93,13 +94,8 @@ pipeline {
                     def newVersion
                     def releaseType = params.releaseType
                     echo "Release type is: ${releaseType}"
+                   
 
-                    def buildNumber
-                    if (fileExists(BUILD_NUMBER_FILE1)) {
-                        buildNumber = readFile(BUILD_NUMBER_FILE).trim()
-                    } else {
-                        buildNumber = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'buildNumber\']/text()" pom.xml', returnStdout: true).trim()
-                    }
                     if (releaseType == 'build') {
                         // Append build number to the current version for 'build' release type
                         newVersion = "${pomVersion}.${env.BUILD_NUMBER}"
@@ -110,40 +106,59 @@ pipeline {
                         
                         if (releaseType == 'major' && currentMajor.toInteger() == baseMajor.toInteger() + 1) {
                             newVersion = "${(baseMajor.toInteger() + 1)}.0.0"
+                                // Read the build number from buildNumber.txt if it exists, else read from pom.xml
+                        def buildNumber
+                        if (fileExists(BUILD_NUMBER_FILE)) {
+                            buildNumber = readFile(BUILD_NUMBER_FILE).trim()
+                        } else {
+                            buildNumber = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'buildNumber\']/text()" pom.xml', returnStdout: true).trim()
+                        }
                             // Increment the base version for major release
                             buildNumber = (buildNumber.toInteger() + 1).toString()
                             echo "Incrementing build number to: ${buildNumber}"
-                            writeFile file: BUILD_NUMBER_FILE, text: buildNumber1
+                            writeFile file: BUILD_NUMBER_FILE, text: buildNumber
                             // Set the build number in the environment
                             env.BUILD_NUMBER = buildNumber
                             echo "Build number: ${buildNumber}"
                             // Append build number to the current version for 'build' release type
-                            newVersion = "${pomVersion}.${env.BUILD_NUMBER}"
+                            newVersion = "${newVersion}.${env.BUILD_NUMBER}"
                             echo "New version: ${newVersion}"
                         } else if (releaseType == 'minor' && currentMinor.toInteger() == baseMinor.toInteger() + 1) {
                             newVersion = "${baseMajor}.${(baseMinor.toInteger() + 1)}.0"
                              // Increment the base version for minor release
+                          def buildNumber
+                          if (fileExists(BUILD_NUMBER_FILE)) {
+                            buildNumber = readFile(BUILD_NUMBER_FILE).trim()
+                        } else {
+                            buildNumber = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'buildNumber\']/text()" pom.xml', returnStdout: true).trim()
+                        }
                             buildNumber = (buildNumber.toInteger() + 1).toString()
                             echo "Incrementing build number to: ${buildNumber}"
-                            writeFile file: BUILD_NUMBER_FILE, text: buildNumber1
+                            writeFile file: BUILD_NUMBER_FILE, text: buildNumber
                             // Set the build number in the environment
                             env.BUILD_NUMBER = buildNumber
                             echo "Build number: ${buildNumber}"
                             // Append build number to the current version for 'minor' release type
-                            newVersion = "${pomVersion}.${env.BUILD_NUMBER}"
-                            echo "New version: ${newVersion}
+                            newVersion = "${newVersion}.${env.BUILD_NUMBER}"
+                            echo "New version: ${newVersion}"
                         } else if (releaseType == 'patch' && currentPatch.toInteger() == basePatch.toInteger() + 1) {
                             newVersion = "${baseMajor}.${baseMinor}.${(basePatch.toInteger() + 1)}"
                             // Increment the base version for patch release
+                          def buildNumber
+                          if (fileExists(BUILD_NUMBER_FILE)) {
+                            buildNumber = readFile(BUILD_NUMBER_FILE).trim()
+                        } else {
+                            buildNumber = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'buildNumber\']/text()" pom.xml', returnStdout: true).trim()
+                        }
                             buildNumber = (buildNumber.toInteger() + 1).toString()
                             echo "Incrementing build number to: ${buildNumber}"
-                            writeFile file: BUILD_NUMBER_FILE, text: buildNumber1
+                            writeFile file: BUILD_NUMBER_FILE, text: buildNumber
                             // Set the build number in the environment
                             env.BUILD_NUMBER = buildNumber
                             echo "Build number: ${buildNumber}"
                             // Append build number to the current version for 'patch' release type
-                            newVersion = "${pomVersion}.${env.BUILD_NUMBER}"
-                            echo "New version: ${newVersion}
+                            newVersion = "${newVersion}.${env.BUILD_NUMBER}"
+                            echo "New version: ${newVersion}"
                         } else {
                             error "Invalid release type or mismatch with base version. Stopping the pipeline."
                         }
