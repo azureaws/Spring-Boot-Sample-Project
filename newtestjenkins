@@ -129,6 +129,12 @@ pipeline {
                         } else if (releaseType == 'minor' && currentMinor.toInteger() == baseMinor.toInteger() + 1) {
                             newVersion = "${baseMajor}.${(baseMinor.toInteger() + 1)}.0"
                              // Increment the base version for minor release
+                          def buildNumber
+                          if (fileExists(BUILD_NUMBER_FILE)) {
+                            buildNumber = readFile(BUILD_NUMBER_FILE).trim()
+                        } else {
+                            buildNumber = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'buildNumber\']/text()" pom.xml', returnStdout: true).trim()
+                        }
                             buildNumber = (buildNumber.toInteger() + 1).toString()
                             echo "Incrementing build number to: ${buildNumber}"
                             writeFile file: BUILD_NUMBER_FILE, text: buildNumber
@@ -141,6 +147,12 @@ pipeline {
                         } else if (releaseType == 'patch' && currentPatch.toInteger() == basePatch.toInteger() + 1) {
                             newVersion = "${baseMajor}.${baseMinor}.${(basePatch.toInteger() + 1)}"
                             // Increment the base version for patch release
+                          def buildNumber
+                          if (fileExists(BUILD_NUMBER_FILE)) {
+                            buildNumber = readFile(BUILD_NUMBER_FILE).trim()
+                        } else {
+                            buildNumber = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'buildNumber\']/text()" pom.xml', returnStdout: true).trim()
+                        }
                             buildNumber = (buildNumber.toInteger() + 1).toString()
                             echo "Incrementing build number to: ${buildNumber}"
                             writeFile file: BUILD_NUMBER_FILE, text: buildNumber
