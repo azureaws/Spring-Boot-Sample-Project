@@ -116,7 +116,7 @@ pipeline {
                             // Increment the base version for major release
                             buildNumber = (buildNumber.toInteger() + 1).toString()
                             echo "Incrementing build number to: ${buildNumber}"
-                            writeFile file: BUILD_NUMBER_FILE, text: buildNumber1
+                            writeFile file: BUILD_NUMBER_FILE, text: buildNumber
                             // Set the build number in the environment
                             env.BUILD_NUMBER = buildNumber
                             echo "Build number: ${buildNumber}"
@@ -128,7 +128,7 @@ pipeline {
                              // Increment the base version for minor release
                             buildNumber = (buildNumber.toInteger() + 1).toString()
                             echo "Incrementing build number to: ${buildNumber}"
-                            writeFile file: BUILD_NUMBER_FILE, text: buildNumber1
+                            writeFile file: BUILD_NUMBER_FILE, text: buildNumber
                             // Set the build number in the environment
                             env.BUILD_NUMBER = buildNumber
                             echo "Build number: ${buildNumber}"
@@ -140,7 +140,7 @@ pipeline {
                             // Increment the base version for patch release
                             buildNumber = (buildNumber.toInteger() + 1).toString()
                             echo "Incrementing build number to: ${buildNumber}"
-                            writeFile file: BUILD_NUMBER_FILE, text: buildNumber1
+                            writeFile file: BUILD_NUMBER_FILE, text: buildNumber
                             // Set the build number in the environment
                             env.BUILD_NUMBER = buildNumber
                             echo "Build number: ${buildNumber}"
