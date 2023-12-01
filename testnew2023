@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         BASE_VERSION_FILE = "baseVersion.txt"
+        BUILD_NUMBER_FILE = "${WORKSPACE}/buildNumber.txt"
     }
 
     stages {
@@ -28,14 +29,19 @@ pipeline {
                         echo "Base version read from file: ${baseVersion}"
                     }
 
-                    def buildNumberFile = "${WORKSPACE}/buildNumber.txt"
-                    def buildNumber
-                    
                     // Read the build number from buildNumber.txt if it exists, else read from pom.xml
-                    if (fileExists(buildNumberFile)) {
-                        buildNumber = readFile(buildNumberFile).trim()
+                    def buildNumber
+                    if (fileExists(BUILD_NUMBER_FILE)) {
+                        buildNumber = readFile(BUILD_NUMBER_FILE).trim()
                     } else {
                         buildNumber = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'buildNumber\']/text()" pom.xml', returnStdout: true).trim()
+                    }
+
+                    // Increment the build number if the release type is 'build'
+                    if (params.releaseType == 'build') {
+                        buildNumber = (buildNumber.toInteger() + 1).toString()
+                        echo "Incrementing build number to: ${buildNumber}"
+                        writeFile file: BUILD_NUMBER_FILE, text: buildNumber
                     }
 
                     // Set the build number in the environment
@@ -46,10 +52,9 @@ pipeline {
                     env.BASE_VERSION = baseVersion
                     echo "Base version: ${baseVersion}"
 
-                    // Write the base version, build number, and build version back to the files for subsequent builds
+                    // Write the base version back to the file for subsequent builds
                     writeFile file: baseVersionFile, text: baseVersion
-                    writeFile file: buildNumberFile, text: buildNumber
-                    echo "Base version updated in ${BASE_VERSION_FILE}, build number updated in ${WORKSPACE}/buildNumber.txt"
+                    echo "Base version updated in ${BASE_VERSION_FILE}"
                 }
             }
         }
@@ -73,12 +78,14 @@ pipeline {
                     def buildNumberFile = "${WORKSPACE}/buildNumber.txt"
 
                     if (releaseType == 'build') {
-                        // Read  the incremented build number
-                        def buildNumber = readFile(buildNumberFile).trim()
-                        env.BUILD_NUMBER = buildNumber
                         // Append build number to the current version for 'build' release type
                         newVersion = "${pomVersion}.${env.BUILD_NUMBER}"
                         echo "New version: ${newVersion}"
+
+                        // Read and increment the build number
+                        def buildNumber = readFile(buildNumberFile).trim()
+                        buildNumber = (buildNumber.toInteger() + 1).toString()
+                        env.BUILD_NUMBER = buildNumber
                     } else if (releaseType == 'major' || releaseType == 'minor' || releaseType == 'patch') {
                         def (baseMajor, baseMinor, basePatch) = baseVersion.split('\\.')
                         def (currentMajor, currentMinor, currentPatch) = pomVersion.split('\\.')
@@ -121,7 +128,7 @@ pipeline {
                     def newVersion = readFile("${WORKSPACE}/buildNumber.txt")
                     echo "Using the new version in Docker Build stage: ${newVersion}"
                     if (isPodmanBuildNeeded) {
-                        echo "My logic"
+                        echo "my docker logic"
                     }
                 }
             }
