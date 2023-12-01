@@ -28,15 +28,14 @@ pipeline {
                         echo "Base version read from file: ${baseVersion}"
                     }
 
-                    // Read the build number from buildNumber.txt if it exists, else read from pom.xml
                     def buildNumberFile = "${WORKSPACE}/buildNumber.txt"
-                    def buildNumber = new File(buildNumberFile).exists() ? readFile(buildNumberFile).trim() :
-                                      sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'buildNumber\']/text()" pom.xml', returnStdout: true).trim()
-
-                    // Increment the build number if the release type is 'build'
-                    if (params.releaseType == 'build') {
-                        buildNumber = (buildNumber.toInteger() + 1).toString()
-                        echo "Incrementing build number to: ${buildNumber}"
+                    def buildNumber
+                    
+                    // Read the build number from buildNumber.txt if it exists, else read from pom.xml
+                    if (fileExists(buildNumberFile)) {
+                        buildNumber = readFile(buildNumberFile).trim()
+                    } else {
+                        buildNumber = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'buildNumber\']/text()" pom.xml', returnStdout: true).trim()
                     }
 
                     // Set the build number in the environment
