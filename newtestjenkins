@@ -10,18 +10,6 @@ pipeline {
         BUILD_VERSION_FILE = 'buildversion.txt'
     }
 
-    pipeline {
-    agent any
-    tools {
-        maven 'Maven 3.9.4'
-        jdk 'JDK17'
-    }
-    environment {
-        NAMESPACE = '9334-sit1-ifmis'
-        BASE_VERSION_FILE = 'baseversion.txt'
-        BUILD_VERSION_FILE = 'buildversion.txt'
-    }
-
   
    stages {
       stage('Maven Build') {
