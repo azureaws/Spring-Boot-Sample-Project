@@ -40,13 +40,6 @@ pipeline {
                     def (currentMajor, currentMinor, currentPatch) = pomVersion.split('\\.')
                     // Increment the build number if the release type is 'build'
                     if (params.releaseType == 'build') {
-                     if (
-                        (baseMajor == currentMajor) &&
-                        (baseMinor == currentMinor) &&
-                        (basePatch == currentPatch)
-                    ) {
-                        error "Base version components match current version components. Stopping the pipeline."
-                    }
                         buildNumber = (buildNumber.toInteger() + 1).toString()
                         echo "Incrementing build number to: ${buildNumber}"
                         writeFile file: BUILD_NUMBER_FILE, text: buildNumber
