@@ -113,8 +113,6 @@ pipeline {
                     writeFile file: buildVersionFile, text: newVersion
                     writeFile file: baseVersionFile, text: newVersion
                     echo "New version written to ${buildVersionFile}"
-                    if (baseMajor == currentMajor && baseMinor == currentMinor && basePatch == currentPatch) {
-                        error "New version matches current version. Stopping the pipeline."
                     }
                 }
             }
