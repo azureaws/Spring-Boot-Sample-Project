@@ -98,7 +98,7 @@ pipeline {
                     echo "Release type is: ${releaseType}"
 
                     def buildNumber
-                    if (fileExists(BUILD_NUMBER_FILE1)) {
+                    if (fileExists(BUILD_NUMBER_FILE)) {
                         buildNumber = readFile(BUILD_NUMBER_FILE).trim()
                     } else {
                         buildNumber = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'buildNumber\']/text()" pom.xml', returnStdout: true).trim()
