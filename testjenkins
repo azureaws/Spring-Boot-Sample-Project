@@ -7,7 +7,10 @@ pipeline {
     environment {
         NAMESPACE = '9334-dev1-ifmis'
         BASE_VERSION_FILE = 'baseversion.txt'
-        BUILD_VERSION_FILE = 'buildversion.txt'
+        BUILD_NUMBER_FILE = "${WORKSPACE}/buildNumber.txt"
+        BUILD_NUMBER_FILE1 = "${WORKSPACE}/buildNumberMajor.txt"
+        BUILD_NUMBER_FILE2 = "${WORKSPACE}/buildNumberMinor.txt"
+        BUILD_NUMBER_FILE3 = "${WORKSPACE}/buildNumberPatch.txt"
     }
 
     stages {
@@ -98,8 +101,24 @@ pipeline {
                     def releaseType = params.releaseType
                     echo "Release type is: ${releaseType}"
 
-                    def buildNumberFile = "${WORKSPACE}/buildNumber.txt"
-
+                    def buildNumber1
+                    if (fileExists(BUILD_NUMBER_FILE1)) {
+                        buildNumber1 = readFile(BUILD_NUMBER_FILE).trim()
+                    } else {
+                        buildNumber1 = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'buildNumber\']/text()" pom.xml', returnStdout: true).trim()
+                    }
+                    def buildNumber2
+                    if (fileExists(BUILD_NUMBER_FILE2)) {
+                        buildNumber2 = readFile(BUILD_NUMBER_FILE).trim()
+                    } else {
+                        buildNumber2 = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'buildNumber\']/text()" pom.xml', returnStdout: true).trim()
+                    }
+                    def buildNumber3
+                    if (fileExists(BUILD_NUMBER_FILE3)) {
+                        buildNumber3 = readFile(BUILD_NUMBER_FILE).trim()
+                    } else {
+                        buildNumber3 = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'buildNumber\']/text()" pom.xml', returnStdout: true).trim()
+                    }
                     if (releaseType == 'build') {
                         // Append build number to the current version for 'build' release type
                         newVersion = "${pomVersion}.${env.BUILD_NUMBER}"
@@ -107,14 +126,41 @@ pipeline {
                     } else if (releaseType == 'major' || releaseType == 'minor' || releaseType == 'patch') {
                         def (baseMajor, baseMinor, basePatch) = baseVersion.split('\\.')
                         def (currentMajor, currentMinor, currentPatch) = pomVersion.split('\\.')
-
+                        
                         if (releaseType == 'major' && currentMajor.toInteger() == baseMajor.toInteger() + 1) {
                             newVersion = "${(baseMajor.toInteger() + 1)}.0.0"
                             // Increment the base version for major release
+                            buildNumber1 = (buildNumber.toInteger() + 1).toString()
+                            echo "Incrementing build number to: ${buildNumber1}"
+                            writeFile file: BUILD_NUMBER_FILE1, text: buildNumber1
+                            // Set the build number in the environment
+                            env.BUILD_NUMBER = buildNumber1
+                            echo "Build number: ${buildNumber1}"
+                            // Append build number to the current version for 'build' release type
+                            newVersion = "${pomVersion}.${env.BUILD_NUMBER}"
+                            echo "New version: ${newVersion}"
                         } else if (releaseType == 'minor' && currentMinor.toInteger() == baseMinor.toInteger() + 1) {
                             newVersion = "${baseMajor}.${(baseMinor.toInteger() + 1)}.0"
+                            buildNumber2 = (buildNumber.toInteger() + 1).toString()
+                            echo "Incrementing build number to: ${buildNumber2}"
+                            writeFile file: BUILD_NUMBER_FILE1, text: buildNumber2
+                            // Set the build number in the environment
+                            env.BUILD_NUMBER = buildNumber2
+                            echo "Build number: ${buildNumber2}"
+                            // Append build number to the current version for 'build' release type
+                            newVersion = "${pomVersion}.${env.BUILD_NUMBER}"
+                            echo "New version: ${newVersion}"
                         } else if (releaseType == 'patch' && currentPatch.toInteger() == basePatch.toInteger() + 1) {
                             newVersion = "${baseMajor}.${baseMinor}.${(basePatch.toInteger() + 1)}"
+                            buildNumber3= (buildNumber.toInteger() + 1).toString()
+                            echo "Incrementing build number to: ${buildNumber3}"
+                            writeFile file: BUILD_NUMBER_FILE1, text: buildNumber3
+                            // Set the build number in the environment
+                            env.BUILD_NUMBER = buildNumber3
+                            echo "Build number: ${buildNumber3}"
+                            // Append build number to the current version for 'build' release type
+                            newVersion = "${pomVersion}.${env.BUILD_NUMBER}"
+                            echo "New version: ${newVersion}"
                         } else {
                             error "Invalid release type or mismatch with base version. Stopping the pipeline."
                         }
