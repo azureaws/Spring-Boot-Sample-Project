@@ -49,7 +49,7 @@ pipeline {
                     }
 
                     // Read the build number from the pom.xml
-                    def buildVersionFile = "${WORKSPACE}/${BUILD_VERSION_FILE}"
+                    def buildNumberFile = "${WORKSPACE}/buildNumber.txt"
 
                     // Read the build number from buildNumber.txt if it exists, else read from pom.xml
                     def buildNumber = new File(buildNumberFile).exists() ? readFile(buildNumberFile).trim() :
