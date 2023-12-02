@@ -57,23 +57,20 @@ pipeline {
                     // Read the build number from buildNumber.txt if it exists, else read from pom.xml
                     
                     def buildNumber
-                    def buildNumberContent
                     if (fileExists(BUILD_NUMBER_FILE)) {
                         buildNumber = readFile(BUILD_NUMBER_FILE).trim()
                     } else {
-                        // Extract the version content from the pom.xml
-                        def versionContent = sh(script: 'xmllint --xpath "string(/project/version)" pom.xml', returnStdout: true).trim()
+                           // Read the content of the pom.xml file
+                            def pomXmlContent = readFile('pom.xml')
 
-                        // Extract the build number using a regular expression
-                        def buildNumberMatch = versionContent =~ /(\d+)-SNAPSHOT/
-
-                    // Ensure a match is found before accessing the result
-                    if (buildNumberMatch) {
-                        def buildNumber = buildNumberMatch[0][1]
-                        echo "Build Number: ${buildNumber}"
-                    } else {
-                        error "Unable to extract build number from version string."
-                    }
+                           // Parse the XML content
+                            def pomXml = new XmlSlurper().parseText(pomXmlContent)
+        
+                            // Extract the buildNumber from the properties element
+                            def buildNumber = pomXml.properties.buildNumber.text()
+        
+                            // Now you can use the buildNumber in your pipeline
+                            echo "Build Number: ${buildNumber}"
                     }
                     
                     // Increment the build number if the release type is 'build'
