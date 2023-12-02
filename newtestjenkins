@@ -71,6 +71,7 @@ pipeline {
                         buildNumber = readFile(BUILD_NUMBER_FILE).trim()
                     } else {
                         buildNumber = currentBuild
+                        echo "Buildnumber:${buildNumber}"
                     }
     
                     // Increment the build number if the release type is 'build'
