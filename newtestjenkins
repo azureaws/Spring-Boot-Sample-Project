@@ -120,13 +120,25 @@ pipeline {
                         
                         if (releaseType == 'major' && currentMajor.toInteger() == baseMajor.toInteger() + 1) {
                             newVersion = "${(baseMajor.toInteger() + 1)}.0.0"
-                                // Read the build number from buildNumber.txt if it exists, else read from pom.xml
-                        def buildNumber
-                        if (fileExists(BUILD_NUMBER_FILE)) {
-                            buildNumber = readFile(BUILD_NUMBER_FILE).trim()
-                        } else {
-                            buildNumber = 1
-                        }
+                               // Remove the '-SNAPSHOT' suffix
+                            pomVersion = pomVersion.replaceAll('-SNAPSHOT', '')
+
+                            // Split the version string using dot as a delimiter
+                    def (presentMajor, presentMinor, presentPatch, presentBuild) = pomVersion.split('\\.')
+
+                    // Now you can use the individual version components in your pipeline
+                    echo "Major Version: ${presentMajor}"
+                    echo "Minor Version: ${presentMajor}"
+                    echo "Patch Version: ${presentPatch}"
+                    echo "Build Number: ${presentBuild ?: 'Not found'}"
+                    def buildNumber
+                        
+                    if (fileExists(BUILD_NUMBER_FILE)) {
+                        buildNumber = readFile(BUILD_NUMBER_FILE).trim()
+                    } else {
+                        buildNumber = presentBuild
+                        echo "Buildnumber:${buildNumber}"
+                    }
                             // Increment the base version for major release
                             buildNumber = (buildNumber.toInteger() + 1).toString()
                             echo "Incrementing build number to: ${buildNumber}"
