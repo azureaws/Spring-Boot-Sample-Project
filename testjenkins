@@ -27,9 +27,8 @@ pipeline {
                 }
             }
         }
-
-        
-        stage('Initialize') {
+             
+       stage('Initialize') {
             steps {
                 script {
                     // Read the version from pom.xml
@@ -50,23 +49,36 @@ pipeline {
                         baseVersion = readFile(baseVersionFile).trim()
                         echo "Base version read from file: ${baseVersion}"
                     }
+        
 
-                    // Read the build number from buildNumber.txt if it exists, else read from pom.xml
+                    // Remove the '-SNAPSHOT' suffix
+                    pomVersion = pomVersion.replaceAll('-SNAPSHOT', '')
+
+                    // Split the version string using dot as a delimiter
+                    def (currentMajor, currentMinor, currentPatch, currentBuild) = pomVersion.split('\\.')
+
+                    // Now you can use the individual version components in your pipeline
+                    echo "Major Version: ${currentMajor}"
+                    echo "Minor Version: ${currentMinor}"
+                    echo "Patch Version: ${currentPatch}"
+                    echo "Build Number: ${currentBuild ?: 'Not found'}"
                     def buildNumber
+                        
                     if (fileExists(BUILD_NUMBER_FILE)) {
                         buildNumber = readFile(BUILD_NUMBER_FILE).trim()
                     } else {
-                        buildNumber = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'buildNumber\']/text()" pom.xml', returnStdout: true).trim()
+                        buildNumber = currentBuild
+                        echo "Buildnumber:${buildNumber}"
                     }
-                    def (baseMajor, baseMinor, basePatch) = baseVersion.split('\\.')
-                    def (currentMajor, currentMinor, currentPatch) = pomVersion.split('\\.')
+    
                     // Increment the build number if the release type is 'build'
                     if (params.releaseType == 'build') {
                         buildNumber = (buildNumber.toInteger() + 1).toString()
                         echo "Incrementing build number to: ${buildNumber}"
                         writeFile file: BUILD_NUMBER_FILE, text: buildNumber
                     }
-
+                    // Set the build number as an environment variable
+                    env.BUILD_NUMBER = buildNumber
                     // Set the base version in the environment
                     env.BASE_VERSION = baseVersion
                     echo "Base version: ${baseVersion}"
@@ -95,24 +107,35 @@ pipeline {
                     def releaseType = params.releaseType
                     echo "Release type is: ${releaseType}"
                    
-
+                    def (currentMajor, currentMinor, currentPatch) = pomVersion.split('\\.')
                     if (releaseType == 'build') {
                         // Append build number to the current version for 'build' release type
-                        newVersion = "${currentMajor}.${currentMinor}.${currentPatch}.${buildNumber}-SNAPSHOT"
+                        newVersion = "${currentMajor}.${currentMinor}.${currentPatch}.${env.BUILD_NUMBER}-SNAPSHOT"
                         echo "New version: ${newVersion}"
                     } else if (releaseType == 'major' || releaseType == 'minor' || releaseType == 'patch') {
                         def (baseMajor, baseMinor, basePatch) = baseVersion.split('\\.')
-                        def (currentMajor, currentMinor, currentPatch) = pomVersion.split('\\.')
                         
                         if (releaseType == 'major' && currentMajor.toInteger() == baseMajor.toInteger() + 1) {
                             newVersion = "${(baseMajor.toInteger() + 1)}.0.0"
-                                // Read the build number from buildNumber.txt if it exists, else read from pom.xml
-                        def buildNumber
-                        if (fileExists(BUILD_NUMBER_FILE)) {
-                            buildNumber = readFile(BUILD_NUMBER_FILE).trim()
-                        } else {
-                            buildNumber = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'buildNumber\']/text()" pom.xml', returnStdout: true).trim()
-                        }
+                               // Remove the '-SNAPSHOT' suffix
+                            pomVersion = pomVersion.replaceAll('-SNAPSHOT', '')
+
+                            // Split the version string using dot as a delimiter
+                    def (presentMajor, presentMinor, presentPatch, presentBuild) = pomVersion.split('\\.')
+
+                    // Now you can use the individual version components in your pipeline
+                    echo "Major Version: ${presentMajor}"
+                    echo "Minor Version: ${presentMinor}"
+                    echo "Patch Version: ${presentPatch}"
+                    echo "Build Number: ${presentBuild ?: 'Not found'}"
+                    def buildNumber
+                        
+                    if (fileExists(BUILD_NUMBER_FILE)) {
+                        buildNumber = readFile(BUILD_NUMBER_FILE).trim()
+                    } else {
+                        buildNumber = presentBuild
+                        echo "Buildnumber:${buildNumber}"
+                    }
                             // Increment the base version for major release
                             buildNumber = (buildNumber.toInteger() + 1).toString()
                             echo "Incrementing build number to: ${buildNumber}"
@@ -121,43 +144,72 @@ pipeline {
                             env.BUILD_NUMBER = buildNumber
                             echo "Build number: ${buildNumber}"
                             // Append build number to the current version for 'build' release type
-                            newVersion = "${newVersion}.${env.BUILD_NUMBER}"
+                            newVersion = "${newVersion}.${env.BUILD_NUMBER}-SNAPSHOT"
                             echo "New version: ${newVersion}"
                         } else if (releaseType == 'minor' && currentMinor.toInteger() == baseMinor.toInteger() + 1) {
+                            //Increment the version for minor release
                             newVersion = "${baseMajor}.${(baseMinor.toInteger() + 1)}.0"
-                             // Increment the base version for minor release
-                          def buildNumber
-                          if (fileExists(BUILD_NUMBER_FILE)) {
-                            buildNumber = readFile(BUILD_NUMBER_FILE).trim()
-                        } else {
-                            buildNumber = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'buildNumber\']/text()" pom.xml', returnStdout: true).trim()
-                        }
+                             // Remove the '-SNAPSHOT' suffix
+                            pomVersion = pomVersion.replaceAll('-SNAPSHOT', '')
+
+                            // Split the version string using dot as a delimiter
+                    def (present1Major, present1Minor, present1Patch, present1Build) = pomVersion.split('\\.')
+
+                    // Now you can use the individual version components in your pipeline
+                    echo "Major Version: ${present1Major}"
+                    echo "Minor Version: ${present1Minor}"
+                    echo "Patch Version: ${present1Patch}"
+                    echo "Build Number: ${present1Build ?: 'Not found'}"
+                    def buildNumber
+                        
+                    if (fileExists(BUILD_NUMBER_FILE)) {
+                        buildNumber = readFile(BUILD_NUMBER_FILE).trim()
+                    } else {
+                        buildNumber = present1Build
+                        echo "Buildnumber:${buildNumber}"
+                    }
+                            // Increment the base version for major release
                             buildNumber = (buildNumber.toInteger() + 1).toString()
                             echo "Incrementing build number to: ${buildNumber}"
                             writeFile file: BUILD_NUMBER_FILE, text: buildNumber
                             // Set the build number in the environment
                             env.BUILD_NUMBER = buildNumber
                             echo "Build number: ${buildNumber}"
-                            // Append build number to the current version for 'minor' release type
-                            newVersion = "${newVersion}.${env.BUILD_NUMBER}"
+                            // Append build number to the current version for 'build' release type
+                            newVersion = "${newVersion}.${env.BUILD_NUMBER}-SNAPSHOT"
                             echo "New version: ${newVersion}"
                         } else if (releaseType == 'patch' && currentPatch.toInteger() == basePatch.toInteger() + 1) {
                             newVersion = "${baseMajor}.${baseMinor}.${(basePatch.toInteger() + 1)}"
                             // Increment the base version for patch release
-                          def buildNumber
-                          if (fileExists(BUILD_NUMBER_FILE)) {
-                            buildNumber = readFile(BUILD_NUMBER_FILE).trim()
-                        } else {
-                            buildNumber = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'buildNumber\']/text()" pom.xml', returnStdout: true).trim()
-                        }
+                    
+                            // Remove the '-SNAPSHOT' suffix
+                            pomVersion = pomVersion.replaceAll('-SNAPSHOT', '')
+
+                            // Split the version string using dot as a delimiter
+                    def (present2Major, present2Minor, present2Patch, present2Build) = pomVersion.split('\\.')
+
+                    // Now you can use the individual version components in your pipeline
+                    echo "Major Version: ${present2Major}"
+                    echo "Minor Version: ${present2Minor}"
+                    echo "Patch Version: ${present2Patch}"
+                    echo "Build Number: ${present2Build ?: 'Not found'}"
+                    def buildNumber
+                        
+                    if (fileExists(BUILD_NUMBER_FILE)) {
+                        buildNumber = readFile(BUILD_NUMBER_FILE).trim()
+                    } else {
+                        buildNumber = present2Build
+                        echo "Buildnumber:${buildNumber}"
+                    }
+                            // Increment the base version for major release
                             buildNumber = (buildNumber.toInteger() + 1).toString()
                             echo "Incrementing build number to: ${buildNumber}"
                             writeFile file: BUILD_NUMBER_FILE, text: buildNumber
                             // Set the build number in the environment
                             env.BUILD_NUMBER = buildNumber
                             echo "Build number: ${buildNumber}"
-                            // Append build number to the current version for 'patch' release type
-                            newVersion = "${newVersion}.${env.BUILD_NUMBER}"
+                            // Append build number to the current version for 'build' release type
+                            newVersion = "${newVersion}.${env.BUILD_NUMBER}-SNAPSHOT"
                             echo "New version: ${newVersion}"
                         } else {
                             error "Invalid release type or mismatch with base version. Stopping the pipeline."
@@ -167,7 +219,7 @@ pipeline {
                     }
 
                     // Set the base version in the environment
-                    env.BASE_VERSION = newVersion
+                    env.BASE_VERSION = newVersion.split("-SNAPSHOT")
                     echo "Base version: ${baseVersion}"
 
                     
@@ -181,6 +233,7 @@ pipeline {
                     }
                 }
             }
+
 
         stage('Docker Build') {
             steps {
