@@ -116,7 +116,6 @@ pipeline {
                         echo "New version: ${newVersion}"
                     } else if (releaseType == 'major' || releaseType == 'minor' || releaseType == 'patch') {
                         def (baseMajor, baseMinor, basePatch) = baseVersion.split('\\.')
-                        def (currentMajor, currentMinor, currentPatch) = pomVersion.split('\\.')
                         
                         if (releaseType == 'major' && currentMajor.toInteger() == baseMajor.toInteger() + 1) {
                             newVersion = "${(baseMajor.toInteger() + 1)}.0.0"
