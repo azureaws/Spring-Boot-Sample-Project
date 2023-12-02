@@ -52,19 +52,29 @@ pipeline {
                         baseVersion = readFile(baseVersionFile).trim()
                         echo "Base version read from file: ${baseVersion}"
                     }
-                    
+                    // Read the content of the pom.xml file
+                    def pomXmlContent = readFile('pom.xml').trim()
+
+                    // Extract the version using xmllint
+                    def pomVersion = sh(script: 'echo \'' + pomXmlContent + '\' | xmllint --xpath "string(/project/version)" -', returnStdout: true).trim()
+
+                    // Remove the '-SNAPSHOT' suffix
+                    pomVersion = pomVersion.replaceAll('-SNAPSHOT', '')
+
+                    // Split the version string using dot as a delimiter
+                    def (currentMajor, currentMinor, currentPatch, currentBuild) = pomVersion.split('\\.')
+
+                    // Now you can use the individual version components in your pipeline
+                    echo "Major Version: ${currentMajor}"
+                    echo "Minor Version: ${currentMinor}"
+                    echo "Patch Version: ${currentPatch}"
+                    echo "Build Number: ${currentBuild ?: 'Not found'}"
                     def buildNumber
+                        
                     if (fileExists(BUILD_NUMBER_FILE)) {
                         buildNumber = readFile(BUILD_NUMBER_FILE).trim()
                     } else {
-                        //Read Maven POM using Jenkins readMavenPom step
-                        def pom = readMavenPom file: 'pom.xml'
-    
-                        // Extract the buildNumber from the properties section
-                        buildNumber = pom.properties.find { it.key == 'buildNumber' }?.value
-    
-                        // Now you can use the buildNumber in your pipeline
-                        echo "Build Number: ${buildNumber ?: 'Not found'}"
+                        build Number = ${currentBuild}
                     }
     
                     // Increment the build number if the release type is 'build'
