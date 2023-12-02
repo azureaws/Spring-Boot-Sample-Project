@@ -70,7 +70,7 @@ pipeline {
                     if (fileExists(BUILD_NUMBER_FILE)) {
                         buildNumber = readFile(BUILD_NUMBER_FILE).trim()
                     } else {
-                        build Number = ${currentBuild}
+                        buildNumber = ${currentBuild}
                     }
     
                     // Increment the build number if the release type is 'build'
