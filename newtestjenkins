@@ -31,7 +31,6 @@ pipeline {
                }
             }
         }
-        
         stage('Initialize') {
             steps {
                 script {
@@ -55,21 +54,14 @@ pipeline {
                     }
 
                     // Read the build number from buildNumber.txt if it exists, else read from pom.xml
-                    
                     def buildNumber
                     if (fileExists(BUILD_NUMBER_FILE)) {
                         buildNumber = readFile(BUILD_NUMBER_FILE).trim()
                     } else {
-                       // Read the content of the pom.xml file
-                        def pomXmlContent = readFile('pom.xml').trim()
-
-                        // Extract the buildNumber using xmllint
-                         buildNumber = sh(script: 'echo \'' + pomXmlContent + '\' | xmllint --xpath "string(/project/properties/buildNumber)" -', returnStdout: true).trim()
-                        // Now you can use the buildNumber in your pipeline
-                        echo "Build Number: ${buildNumber}"
-
+                        buildNumber = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'buildNumber\']/text()" pom.xml', returnStdout: true).trim()
                     }
-                    
+                    def (baseMajor, baseMinor, basePatch) = baseVersion.split('\\.')
+                    def (currentMajor, currentMinor, currentPatch) = pomVersion.split('\\.')
                     // Increment the build number if the release type is 'build'
                     if (params.releaseType == 'build') {
                         buildNumber = (buildNumber.toInteger() + 1).toString()
@@ -121,7 +113,7 @@ pipeline {
                         if (fileExists(BUILD_NUMBER_FILE)) {
                             buildNumber = readFile(BUILD_NUMBER_FILE).trim()
                         } else {
-                            buildNumber = sh(script: 'xmllint --xpath "string(/project/properties/buildNumber)" pom.xml', returnStdout: true).trim()
+                            buildNumber = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'buildNumber\']/text()" pom.xml', returnStdout: true).trim()
                         }
                             // Increment the base version for major release
                             buildNumber = (buildNumber.toInteger() + 1).toString()
@@ -192,6 +184,9 @@ pipeline {
                 }
             }
 
+        
+                       
+                  
         stage('Docker Build') {
             steps {
                 script {
