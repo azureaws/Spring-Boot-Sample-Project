@@ -52,14 +52,17 @@ pipeline {
                         baseVersion = readFile(baseVersionFile).trim()
                         echo "Base version read from file: ${baseVersion}"
                     }
-                    def (currentMajor, currentMinor, currentPatch, currentBuild) = pomVersion.split('\\.')
-                    // Read the build number from buildNumber.txt if it exists, else read from pom.xml
+                    
                     def buildNumber
                     if (fileExists(BUILD_NUMBER_FILE)) {
                         buildNumber = readFile(BUILD_NUMBER_FILE).trim()
                     } else {
-                        buildNumber = ${currentBuild}
-                        echo "Build Number: ${currentBuild}"
+                         // Read the content of the pom.xml file
+                         def pomXmlContent = readFile('pom.xml').trim()
+    
+                        // Extract the buildNumber using xmllint
+                        def buildNumber = sh(script: 'echo \'' + pomXmlContent + '\' | xmllint --xpath "string(/project/properties/buildNumber)" -', returnStdout: true).trim()
+    
                         // Now you can use the buildNumber in your pipeline
                         echo "Build Number: ${buildNumber ?: 'Not found'}"
                     }
