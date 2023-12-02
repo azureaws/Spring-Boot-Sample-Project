@@ -213,7 +213,7 @@ pipeline {
                             echo "Build number: ${buildNumber}"
                             // Append build number to the current version for 'build' release type
                             newVersion = "${newVersion}.${env.BUILD_NUMBER}-SNAPSHOT"
-                            echo "New version: ${newVersion}
+                            echo "New version: ${newVersion}"
                         } else {
                             error "Invalid release type or mismatch with base version. Stopping the pipeline."
                         }
