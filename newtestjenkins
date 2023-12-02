@@ -66,7 +66,7 @@ pipeline {
                         // Extract the buildNumber using xmllint
                         def buildNumber = sh(script: 'echo \'' + pomXmlContent + '\' | xmllint --xpath "string(/project/properties/buildNumber)" -', returnStdout: true).trim()
                         // Now you can use the buildNumber in your pipeline
-                        echo "Build Number: ${buildNumber
+                        echo "Build Number: ${buildNumber}
 
                     }
                     
