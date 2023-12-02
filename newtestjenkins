@@ -61,11 +61,19 @@ pipeline {
                     if (fileExists(BUILD_NUMBER_FILE)) {
                         buildNumber = readFile(BUILD_NUMBER_FILE).trim()
                     } else {
-                        // Extract the build number content between <buildNumber> tags
-                           buildNumberContent = sh(script: 'xmllint --xpath "string(/project/properties/buildNumber)" pom.xml', returnStdout: true).trim()
+                        // Extract the version content from the pom.xml
+                        def versionContent = sh(script: 'xmllint --xpath "string(/project/version)" pom.xml', returnStdout: true).trim()
 
-                        // Extract the numeric portion from the content
-                           buildNumber = buildNumberContent.replaceAll("\\D", '')
+                        // Extract the build number using a regular expression
+                        def buildNumberMatch = versionContent =~ /(\d+)-SNAPSHOT/
+
+                    // Ensure a match is found before accessing the result
+                    if (buildNumberMatch) {
+                        def buildNumber = buildNumberMatch[0][1]
+                        echo "Build Number: ${buildNumber}"
+                    } else {
+                        error "Unable to extract build number from version string."
+                    }
                     }
                     
                     // Increment the build number if the release type is 'build'
