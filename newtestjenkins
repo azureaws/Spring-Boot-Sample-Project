@@ -52,14 +52,14 @@ pipeline {
                         baseVersion = readFile(baseVersionFile).trim()
                         echo "Base version read from file: ${baseVersion}"
                     }
-                    def (Major, Minor, Patch, Build) = (pomVersion + '.' + buildNumber).split('\\.')
+                    def (currentMajor, currentMinor, currentPatch, currentBuild) = pomVersion.split('\\.')
                     // Read the build number from buildNumber.txt if it exists, else read from pom.xml
                     def buildNumber
                     if (fileExists(BUILD_NUMBER_FILE)) {
                         buildNumber = readFile(BUILD_NUMBER_FILE).trim()
                     } else {
-                        buildNumber = ${Build}
-                        echo "Build Number: ${Build}"
+                        buildNumber = ${currentBuild}
+                        echo "Build Number: ${currentBuild}"
                         // Now you can use the buildNumber in your pipeline
                         echo "Build Number: ${buildNumber ?: 'Not found'}"
                     }
