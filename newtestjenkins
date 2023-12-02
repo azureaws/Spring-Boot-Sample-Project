@@ -57,17 +57,17 @@ pipeline {
                     // Read the build number from buildNumber.txt if it exists, else read from pom.xml
                     
                     def buildNumber
+                    def buildNumberContent
                     if (fileExists(BUILD_NUMBER_FILE)) {
                         buildNumber = readFile(BUILD_NUMBER_FILE).trim()
                     } else {
                         // Extract the build number content between <buildNumber> tags
-                        def buildNumberContent = sh(script: 'xmllint --xpath "string(/project/properties/buildNumber)" pom.xml', returnStdout: true).trim()
+                           buildNumberContent = sh(script: 'xmllint --xpath "string(/project/properties/buildNumber)" pom.xml', returnStdout: true).trim()
 
                         // Extract the numeric portion from the content
-                            buildNumber = buildNumberContent.replaceAll("\\D", '')
+                           buildNumber = buildNumberContent.replaceAll("\\D", '')
                     }
-                    def (baseMajor, baseMinor, basePatch) = baseVersion.split('\\.')
-                    def (currentMajor, currentMinor, currentPatch) = pomVersion.split('\\.')
+                    
                     // Increment the build number if the release type is 'build'
                     if (params.releaseType == 'build') {
                         buildNumber = (buildNumber.toInteger() + 1).toString()
