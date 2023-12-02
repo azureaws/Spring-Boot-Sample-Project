@@ -114,7 +114,7 @@ pipeline {
                         if (fileExists(BUILD_NUMBER_FILE)) {
                             buildNumber = readFile(BUILD_NUMBER_FILE).trim()
                         } else {
-                            buildNumber = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'buildNumber\']/text()" pom.xml', returnStdout: true).trim()
+                            buildNumber = sh(script: 'xmllint --xpath "string(/project/properties/buildNumber)" pom.xml', returnStdout: true).trim()
                         }
                             // Increment the base version for major release
                             buildNumber = (buildNumber.toInteger() + 1).toString()
