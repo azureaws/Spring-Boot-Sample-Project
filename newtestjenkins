@@ -57,11 +57,11 @@ pipeline {
                     if (fileExists(BUILD_NUMBER_FILE)) {
                         buildNumber = readFile(BUILD_NUMBER_FILE).trim()
                     } else {
-                         // Read the content of the pom.xml file
-                         def pomXmlContent = readFile('pom.xml').trim()
+                        //Read Maven POM using Jenkins readMavenPom step
+                        def pom = readMavenPom file: 'pom.xml'
     
-                        // Extract the buildNumber using xmllint
-                        buildNumber = sh(script: 'echo \'' + pomXmlContent + '\' | xmllint --xpath "string(/project/properties/buildNumber)" -', returnStdout: true).trim()
+                        // Extract the buildNumber from the properties section
+                        def buildNumber = pom.properties.find { it.key == 'buildNumber' }?.value
     
                         // Now you can use the buildNumber in your pipeline
                         echo "Build Number: ${buildNumber ?: 'Not found'}"
