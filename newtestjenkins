@@ -58,7 +58,20 @@ pipeline {
                     if (fileExists(BUILD_NUMBER_FILE)) {
                         buildNumber = readFile(BUILD_NUMBER_FILE).trim()
                     } else {
-                        buildNumber = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'buildNumber\']/text()" pom.xml', returnStdout: true).trim()
+                        // Read the content of the pom.xml file
+                        def pomXmlContent = readFile('pom.xml').trim()
+    
+                        // Extract the version using xmllint
+                        def version = sh(script: 'echo \'' + pomXmlContent + '\' | xmllint --xpath "string(/project/version)" -', returnStdout: true).trim()
+    
+                        // Split the version string using dot as a delimiter
+                        def versionSegments = version.split('\\.')
+    
+                        // Extract the fourth segment as the build number
+                        def buildNumber = versionSegments.size() > 3 ? versionSegments[3] : null
+    
+                        // Now you can use the buildNumber in your pipeline
+                        echo "Build Number: ${buildNumber ?: 'Not found'}"
                     }
                     def (baseMajor, baseMinor, basePatch) = baseVersion.split('\\.')
                     def (currentMajor, currentMinor, currentPatch) = pomVersion.split('\\.')
