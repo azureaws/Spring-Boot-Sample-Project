@@ -56,7 +56,7 @@ pipeline {
 
                     // Read the build number from buildNumber.txt if it exists, else read from pom.xml
                     
-                    def buildNumber
+                    
                     if (fileExists(BUILD_NUMBER_FILE)) {
                         buildNumber = readFile(BUILD_NUMBER_FILE).trim()
                     } else {
@@ -67,7 +67,7 @@ pipeline {
                             def pomXml = new XmlSlurper().parseText(pomXmlContent)
         
                             // Extract the buildNumber from the properties element
-                            buildNumber = pomXml.properties.buildNumber.text()
+                            def buildNumber = pomXml.properties.buildNumber.text()
         
                             // Now you can use the buildNumber in your pipeline
                             echo "Build Number: ${buildNumber}"
