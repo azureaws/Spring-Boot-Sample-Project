@@ -60,16 +60,14 @@ pipeline {
                     if (fileExists(BUILD_NUMBER_FILE)) {
                         buildNumber = readFile(BUILD_NUMBER_FILE).trim()
                     } else {
-                           // Read the content of the pom.xml file
-                           def pomXmlContent = readFile('pom.xml')
+                            // Read the content of the pom.xml file
+                            def pomXmlContent = readFile('pom.xml')
 
-                          // Use evaluate to execute code with XmlSlurper
-                           def buildNumber = evaluate("""
-                                def pomXml = new XmlSlurper().parseText('''${pomXmlContent}''')
-                                pomXml.properties.buildNumber.text()
-                            """)
-                        // Now you can use the buildNumber in your pipeline
-                           echo "Build Number: ${buildNumber}"
+                            // Extract the buildNumber using xmllint
+                            def buildNumber = sh(script: 'echo \'' + pomXmlContent + '\' | xmllint --xpath "string(/project/properties/buildNumber)" -', returnStdout: true).trim()
+        
+                            // Now you can use the buildNumber in your pipeline
+                            echo "Build Number: ${buildNumber}"
                     }
                     
                     // Increment the build number if the release type is 'build'
