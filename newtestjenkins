@@ -76,7 +76,7 @@ pipeline {
     
                     // Increment the build number if the release type is 'build'
                     if (params.releaseType == 'build') {
-                        buildNumber+ = 1
+                        buildNumber = buildNumber+1
                         echo "Incrementing build number to: ${buildNumber}"
                         writeFile file: BUILD_NUMBER_FILE, text: buildNumber
                     }
