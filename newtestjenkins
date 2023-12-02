@@ -80,7 +80,8 @@ pipeline {
                         echo "Incrementing build number to: ${buildNumber}"
                         writeFile file: BUILD_NUMBER_FILE, text: buildNumber
                     }
-
+                    // Set the build number as an environment variable
+                    env.BUILD_NUMBER = buildNumber
                     // Set the base version in the environment
                     env.BASE_VERSION = baseVersion
                     echo "Base version: ${baseVersion}"
