@@ -112,7 +112,7 @@ pipeline {
                     def (currentMajor, currentMinor, currentPatch) = pomVersion.split('\\.')
                     if (releaseType == 'build') {
                         // Append build number to the current version for 'build' release type
-                        newVersion = "${currentMajor}.${currentMinor}.${currentPatch}.${buildNumber}"
+                        newVersion = "${currentMajor}.${currentMinor}.${currentPatch}.${env.BUILD_NUMBER}"
                         echo "New version: ${newVersion}"
                     } else if (releaseType == 'major' || releaseType == 'minor' || releaseType == 'patch') {
                         def (baseMajor, baseMinor, basePatch) = baseVersion.split('\\.')
