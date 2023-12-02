@@ -52,11 +52,7 @@ pipeline {
                         baseVersion = readFile(baseVersionFile).trim()
                         echo "Base version read from file: ${baseVersion}"
                     }
-                    // Read the content of the pom.xml file
-                    def pomXmlContent = readFile('pom.xml').trim()
-
-                    // Extract the version using xmllint
-                    def pomVersion = sh(script: 'echo \'' + pomXmlContent + '\' | xmllint --xpath "string(/project/version)" -', returnStdout: true).trim()
+        
 
                     // Remove the '-SNAPSHOT' suffix
                     pomVersion = pomVersion.replaceAll('-SNAPSHOT', '')
