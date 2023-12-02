@@ -67,7 +67,7 @@ pipeline {
                             def pomXml = new XmlSlurper().parseText(pomXmlContent)
         
                             // Extract the buildNumber from the properties element
-                            def buildNumber = pomXml.properties.buildNumber.text()
+                            buildNumber = pomXml.properties.buildNumber.text()
         
                             // Now you can use the buildNumber in your pipeline
                             echo "Build Number: ${buildNumber}"
