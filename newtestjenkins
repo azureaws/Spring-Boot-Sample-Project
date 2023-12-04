@@ -161,7 +161,7 @@ pipeline {
                             env.BUILD_NUMBER = buildNumber
                             echo "Build number: ${buildNumber}"
                             // Append build number to the current version for 'build' release type
-                            newVersion = "${newVersion}.${env.BUILD_NUMBER}-SNAPSHOT"
+                            newVersion = "${newVersion}.${env.BUILD_NUMBER}"
                             echo "New version: ${newVersion}"
                         } else if (releaseType == 'minor' && currentMinor.toInteger() == baseMinor.toInteger() + 1) {
                             //Increment the version for minor release
@@ -193,7 +193,7 @@ pipeline {
                             env.BUILD_NUMBER = buildNumber
                             echo "Build number: ${buildNumber}"
                             // Append build number to the current version for 'build' release type
-                            newVersion = "${newVersion}.${env.BUILD_NUMBER}-SNAPSHOT"
+                            newVersion = "${newVersion}.${env.BUILD_NUMBER}"
                             echo "New version: ${newVersion}"
                         } else if (releaseType == 'patch' && currentPatch.toInteger() == basePatch.toInteger() + 1) {
                             newVersion = "${baseMajor}.${baseMinor}.${(basePatch.toInteger() + 1)}"
@@ -226,7 +226,7 @@ pipeline {
                             env.BUILD_NUMBER = buildNumber
                             echo "Build number: ${buildNumber}"
                             // Append build number to the current version for 'build' release type
-                            newVersion = "${newVersion}.${env.BUILD_NUMBER}-SNAPSHOT"
+                            newVersion = "${newVersion}.${env.BUILD_NUMBER}"
                             echo "New version: ${newVersion}"
                         } else {
                             error "Invalid release type or mismatch with base version. Stopping the pipeline."
