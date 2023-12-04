@@ -118,7 +118,7 @@ pipeline {
                             pomVersion = pomVersion.replaceAll('-SNAPSHOT', '')
 
                             // Split the version string using dot as a delimiter
-                    def (preMajor, preMinor, prePatch, presentBuild) = pomVersion.split('\\.')
+                    def (preMajor, preMinor, prePatch, preBuild) = pomVersion.split('\\.')
 
                     // Now you can use the individual version components in your pipeline
                     echo "Major Version: ${preMajor}"
