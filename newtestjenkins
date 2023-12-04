@@ -250,7 +250,7 @@ pipeline {
                 script {
                     def isPodmanBuildNeeded = fileExists("${WORKSPACE}/Dockerfile")
                     def newVersion = readFile("${WORKSPACE}/build_version.txt")
-                    echo "Using the new version in Docker Build stage: ${newVersion}-SNAPSHOT"
+                    echo "Using the new version in Docker Build stage: ${newVersion}"
                     if (isPodmanBuildNeeded) {
                         echo "Building Docker image with Podman..."
                         // Use the module
