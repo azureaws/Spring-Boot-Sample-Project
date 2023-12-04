@@ -38,11 +38,11 @@ pipeline {
                     def pomVersion = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'version\']/text()" pom.xml', returnStdout: true).trim()
                     pomVersion = pomVersion.replaceAll('-SNAPSHOT', '')
                     echo "POM version: ${pomVersion}"
-
+                    
                     // Check if the base version file exists
                     def baseVersionFile = "${WORKSPACE}/${BASE_VERSION_FILE}"
                     def baseVersion
-
+                
                     if (!fileExists(baseVersionFile)) {
                         // For the first build, set the base version to the version in pom.xml
                         echo "Initializing base version to '${pomVersion}'..."
@@ -53,7 +53,8 @@ pipeline {
                         echo "Base version read from file: ${baseVersion}"
                     }
         
-
+                    baseVersion = baseVersion.replaceAll('-SNAPSHOT', '')
+                    echo "Base version: ${baseVersion}"
                     // Remove the '-SNAPSHOT' suffix
                     pomVersion = pomVersion.replaceAll('-SNAPSHOT', '')
 
@@ -118,7 +119,7 @@ pipeline {
                             env.BUILD_NUMBER = buildNumber.toString()
                             echo "Build number: ${buildNumber}"
                             // Append build number to the current version for 'build' release type
-                            newVersion = "${currentMajor}.${currentMinor}.${currentPatch}.${env.BUILD_NUMBER}-SNAPSHOT"
+                            newVersion = "${currentMajor}.${currentMinor}.${currentPatch}.${env.BUILD_NUMBER}"
                             echo "New version: ${newVersion}"
                     } else if (releaseType == 'major' || releaseType == 'minor' || releaseType == 'patch') {
                         def (baseMajor, baseMinor, basePatch) = baseVersion.split('\\.')
