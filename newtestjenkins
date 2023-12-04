@@ -111,8 +111,7 @@ pipeline {
                     if (releaseType == 'initialbuild') {
                         newVersion = "${baseMajor}.${baseMinor}.${basePatch}.${baseBuild}-SNAPSHOT"
                         echo "New version: ${newVersion}"
-                    } else if (releaseType == 'build' && currentBuild.toInteger() == baseBuild.toInteger() + 1) {
-                        def (baseMajor, baseMinor, basePatch,baseBuild) = baseVersion.split('\\.')                       
+                    } else if (releaseType == 'build' && currentBuild.toInteger() == baseBuild.toInteger() + 1) {                      
                             newVersion = "${(baseBuild.toInteger() + 1)}.0.0"
                             writeFile file: BUILD_NUMBER_FILE, text: buildNumber
                             // Set the build number in the environment
