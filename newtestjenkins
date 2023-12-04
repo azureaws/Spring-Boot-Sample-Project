@@ -107,8 +107,9 @@ pipeline {
                    
                     // Split the version string using dot as a delimiter
                     def (currentMajor, currentMinor, currentPatch, currentBuild) = pomVersion.split('\\.')
+                    def initialVersion
                     if (releaseType == 'build') {
-                        initailVersion = "${currentMajor}.${currentMinor}.${currentPatch}.${env.BUILD_NUMBER}-SNAPSHOT"
+                        initialVersion = "${currentMajor}.${currentMinor}.${currentPatch}.${env.BUILD_NUMBER}-SNAPSHOT"
                         echo "New version: ${initialVersion}"
                         def (baseMajor, baseMinor, basePatch,baseBuild) = baseVersion.split('\\.')
                         if (releaseType == 'build' && currentBuild.toInteger() == baseBuild.toInteger() + 1) {
