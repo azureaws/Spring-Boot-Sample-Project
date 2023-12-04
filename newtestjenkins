@@ -109,8 +109,8 @@ pipeline {
                     def (currentMajor, currentMinor, currentPatch, currentBuild) = pomVersion.split('\\.')
                     def newVersion1
                     if (releaseType == 'build') {
-                        newVersion1 = "${currentMajor}.${currentMinor}.${currentPatch}.${env.BUILD_NUMBER}-SNAPSHOT"
-                        echo "New version: ${newVersion1}"
+                        newVersion = "${currentMajor}.${currentMinor}.${currentPatch}.${env.BUILD_NUMBER}"
+                        echo "New version: ${newVersion}"
                         def (baseMajor, baseMinor, basePatch,baseBuild) = baseVersion.split('\\.')
                         if (releaseType == 'build' && currentBuild.toInteger() == baseBuild.toInteger() + 1) {
                             newVersion = "${(baseBuild.toInteger() + 1)}.0.0"
@@ -119,7 +119,7 @@ pipeline {
                             env.BUILD_NUMBER = buildNumber.toString()
                             echo "Build number: ${buildNumber}"
                             // Append build number to the current version for 'build' release type
-                            newVersion = "${currentMajor}.${currentMinor}.${currentPatch}.${env.BUILD_NUMBER}-SNAPSHOT"
+                            newVersion = "${currentMajor}.${currentMinor}.${currentPatch}.${env.BUILD_NUMBER}"
                             echo "New version: ${newVersion}"
                     }
                     } else if (releaseType == 'major' || releaseType == 'minor' || releaseType == 'patch') {
@@ -252,7 +252,7 @@ pipeline {
                 script {
                     def isPodmanBuildNeeded = fileExists("${WORKSPACE}/Dockerfile")
                     def newVersion = readFile("${WORKSPACE}/build_version.txt")
-                    echo "Using the new version in Docker Build stage: ${newVersion}"
+                    echo "Using the new version in Docker Build stage: ${newVersion}-SNAPSHOT"
                     if (isPodmanBuildNeeded) {
                         echo "Building Docker image with Podman..."
                         // Use the module
