@@ -114,6 +114,34 @@ pipeline {
                         echo "New version: ${newVersion}"
                     } else if (releaseType == 'build' && currentBuild.toInteger() == inibaseBuild.toInteger() + 1) {                      
                             newVersion = "${(inibaseBuild.toInteger() + 1)}.0.0"
+                     // Remove the '-SNAPSHOT' suffix
+                            pomVersion = pomVersion.replaceAll('-SNAPSHOT', '')
+
+                            // Split the version string using dot as a delimiter
+                    def (preMajor, preMinor, prePatch, presentBuild) = pomVersion.split('\\.')
+
+                    // Now you can use the individual version components in your pipeline
+                    echo "Major Version: ${preMajor}"
+                    echo "Minor Version: ${preMinor}"
+                    echo "Patch Version: ${prePatch}"
+                    echo "Build Number: ${preBuild ?: 'Not found'}"
+                    def buildNumber
+                        
+                    if (fileExists(BUILD_NUMBER_FILE)) {
+                        buildNumber = readFile(BUILD_NUMBER_FILE).trim()
+                    } else {
+                        buildNumber = preBuild
+                        echo "Buildnumber:${buildNumber}"
+                    }
+                            // Increment the base version for major release
+                            buildNumber = (buildNumber.toInteger() + 1).toString()
+                            echo "Incrementing build number to: ${buildNumber}"
+                            writeFile file: BUILD_NUMBER_FILE, text: buildNumber
+                            // Set the build number in the environment
+                            env.BUILD_NUMBER = buildNumber
+                            echo "Build number: ${buildNumber}"
+                            // Append build number to the current version for 'build' release type
+                            newVersion = "${newVersion}.${env.BUILD_NUMBER}"
                             echo "New version: ${newVersion}"
                     } else if (releaseType == 'major' || releaseType == 'minor' || releaseType == 'patch') {
                         def (baseMajor, baseMinor, basePatch) = baseVersion.split('\\.')
