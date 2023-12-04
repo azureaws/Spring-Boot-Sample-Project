@@ -108,10 +108,10 @@ pipeline {
                     // Split the version string using dot as a delimiter
                     def (currentMajor, currentMinor, currentPatch, currentBuild) = pomVersion.split('\\.')
                     if (releaseType == 'build') {
-                        newVersion = "${currentMajor}.${currentMinor}.${currentPatch}.${env.BUILD_NUMBER}-SNAPSHOT"
-                        echo "New version: ${newVersion}"
+                        initailVersion = "${currentMajor}.${currentMinor}.${currentPatch}.${env.BUILD_NUMBER}-SNAPSHOT"
+                        echo "New version: ${initialVersion}"
                         def (baseMajor, baseMinor, basePatch,baseBuild) = baseVersion.split('\\.')
-                        if (currentBuild.toInteger() == baseBuild.toInteger() + 1) {
+                        if (releaseType == 'build' && currentBuild.toInteger() == baseBuild.toInteger() + 1) {
                             newVersion = "${(baseBuild.toInteger() + 1)}.0.0"
                             writeFile file: BUILD_NUMBER_FILE, text: buildNumber
                             // Set the build number in the environment
