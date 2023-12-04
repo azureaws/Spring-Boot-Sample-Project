@@ -118,7 +118,7 @@ pipeline {
                     if (fileExists(BUILD_NUMBER_FILE)) {
                         buildNumber = readFile(BUILD_NUMBER_FILE).trim()
                     } else {
-                        buildNumber = presentBuild
+                        buildNumber = inibaseBuild
                         echo "Buildnumber:${buildNumber}"
                     }  
                             writeFile file: BUILD_NUMBER_FILE, text: buildNumber
