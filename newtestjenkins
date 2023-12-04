@@ -121,6 +121,12 @@ pipeline {
                             // Append build number to the current version for 'build' release type
                             newVersion = "${currentMajor}.${currentMinor}.${currentPatch}.${env.BUILD_NUMBER}-SNAPSHOT"
                             echo "New version: ${newVersion}"
+                            // Set the base version in the environment
+                            env.BASE_VERSION = newVersion.split("-SNAPSHOT")
+                            echo "Base version: ${baseVersion}"
+                            writeFile file: buildVersionFile, text: newVersion
+                            writeFile file: baseVersionFile, text: newVersion
+                            echo "New version written to ${buildVersionFile}"
                     }
                     } else if (releaseType == 'major' || releaseType == 'minor' || releaseType == 'patch') {
                         def (baseMajor, baseMinor, basePatch) = baseVersion.split('\\.')
