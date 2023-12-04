@@ -114,20 +114,6 @@ pipeline {
                         echo "New version: ${newVersion}"
                     } else if (releaseType == 'build' && currentBuild.toInteger() == inibaseBuild.toInteger() + 1) {                      
                             newVersion = "${(inibaseBuild.toInteger() + 1)}.0.0"
-                    def buildNumber
-                    if (fileExists(BUILD_NUMBER_FILE)) {
-                        buildNumber = readFile(BUILD_NUMBER_FILE).trim()
-                    } else {
-                        env.BUILD_NUMBER = (inibaseBuild + 1).toString()
-                        echo "Buildnumber:${buildNumber}"
-                    }  
-                            writeFile file: BUILD_NUMBER_FILE, text: buildNumber
-                            // Set the build number in the environment
-                            env.BUILD_NUMBER = buildNumber
-                            echo "Build number: ${buildNumber}"
-                           
-                            // Append build number to the current version for 'build' release type
-                            newVersion = "${currentMajor}.${currentMinor}.${currentPatch}.${env.BUILD_NUMBER}"
                             echo "New version: ${newVersion}"
                     } else if (releaseType == 'major' || releaseType == 'minor' || releaseType == 'patch') {
                         def (baseMajor, baseMinor, basePatch) = baseVersion.split('\\.')
