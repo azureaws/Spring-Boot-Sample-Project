@@ -119,7 +119,7 @@ pipeline {
                             env.BUILD_NUMBER = buildNumber
                             echo "Build number: ${buildNumber}"
                             // Append build number to the current version for 'build' release type
-                            newVersion = "${newVersion}.${env.BUILD_NUMBER}-SNAPSHOT"
+                            newVersion = "${currentMajor}.${currentMinor}.${currentPatch}.${env.BUILD_NUMBER}-SNAPSHOT"
                             echo "New version: ${newVersion}"
                               // Set the base version in the environment
                             env.BASE_VERSION = newVersion.split("-SNAPSHOT")
