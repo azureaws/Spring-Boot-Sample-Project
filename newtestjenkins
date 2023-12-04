@@ -108,18 +108,18 @@ pipeline {
                     // Split the version string using dot as a delimiter
                     def (currentMajor, currentMinor, currentPatch, currentBuild) = pomVersion.split('\\.')
                     def newVersion1
-                    if (releaseType == 'build') {
-                        newVersion = "${currentMajor}.${currentMinor}.${currentPatch}.${env.BUILD_NUMBER}"
+                    if (releaseType == 'initialbuild') {
+                        newVersion = "${currentMajor}.${currentMinor}.${currentPatch}.${env.BUILD_NUMBER}-SNAPSHOT"
                         echo "New version: ${newVersion}"
-                        def (baseMajor, baseMinor, basePatch,baseBuild) = baseVersion.split('\\.')
-                        if (releaseType == 'build' && currentBuild.toInteger() == baseBuild.toInteger() + 1) {
+                    } else if (releaseType == 'build' && currentBuild.toInteger() == baseBuild.toInteger() + 1) {
+                        def (baseMajor, baseMinor, basePatch,baseBuild) = baseVersion.split('\\.')                       
                             newVersion = "${(baseBuild.toInteger() + 1)}.0.0"
                             writeFile file: BUILD_NUMBER_FILE, text: buildNumber
                             // Set the build number in the environment
                             env.BUILD_NUMBER = buildNumber.toString()
                             echo "Build number: ${buildNumber}"
                             // Append build number to the current version for 'build' release type
-                            newVersion = "${currentMajor}.${currentMinor}.${currentPatch}.${env.BUILD_NUMBER}"
+                            newVersion = "${currentMajor}.${currentMinor}.${currentPatch}.${env.BUILD_NUMBER}-SNAPSHOT"
                             echo "New version: ${newVersion}"
                     }
                     } else if (releaseType == 'major' || releaseType == 'minor' || releaseType == 'patch') {
