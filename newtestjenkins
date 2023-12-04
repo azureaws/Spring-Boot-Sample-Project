@@ -107,9 +107,9 @@ pipeline {
                    
                     // Split the version string using dot as a delimiter
                     def (currentMajor, currentMinor, currentPatch, currentBuild) = pomVersion.split('\\.')
-                    def (baseMajor, baseMinor, basePatch,baseBuild) = baseVersion.split('\\.')
+                    def (inibaseMajor, inibaseMinor, inibasePatch,baseBuild) = baseVersion.split('\\.')
                     if (releaseType == 'initialbuild') {
-                        newVersion = "${baseMajor}.${baseMinor}.${basePatch}.${baseBuild}-SNAPSHOT"
+                        newVersion = "${inibaseMajor}.${inibaseMinor}.${inibasePatch}.${baseBuild}-SNAPSHOT"
                         echo "New version: ${newVersion}"
                     } else if (releaseType == 'build' && currentBuild.toInteger() == baseBuild.toInteger() + 1) {                      
                             newVersion = "${(baseBuild.toInteger() + 1)}.0.0"
