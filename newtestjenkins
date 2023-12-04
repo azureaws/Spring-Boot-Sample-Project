@@ -113,7 +113,7 @@ pipeline {
                         if (inibaseMajor == 1 && inibaseMinor == 0 && inibasePatch == 0 && inibaseBuild == 0){
                         newVersion = "${inibaseMajor}.${inibaseMinor}.${inibasePatch}.${inibaseBuild}"
                         echo "New version: ${newVersion}"
-                    }
+                        }
                     } else if (releaseType == 'build' && currentBuild.toInteger() == inibaseBuild.toInteger() + 1) {                      
                             newVersion = "${(inibaseBuild.toInteger() + 1)}.0.0"
                      // Remove the '-SNAPSHOT' suffix
