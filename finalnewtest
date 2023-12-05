@@ -118,9 +118,14 @@ pipeline {
                         def baseMinor = inibaseMinor.toInteger()
                         def basePatch = inibasePatch.toInteger()
                         def baseBuild = inibaseBuild.toInteger()
-                        // Read existing build number or initialize with base build number
-                        def buildNumberFile = "${WORKSPACE}/${BUILD_NUMBER_FILE}"
-                        def buildNumber = fileExists(buildNumberFile) ? readFile(buildNumberFile).trim() : baseBuild
+                        def buildNumber
+                        
+                    if (fileExists(BUILD_NUMBER_FILE)) {
+                        buildNumber = readFile(BUILD_NUMBER_FILE).trim()
+                    } else {
+                        buildNumber = baseBuild
+                        echo "Buildnumber:${buildNumber}"
+                    }        
                         // Parse major, minor, patch, and build numbers from the current version
                         def currentMajor = preMajor.toInteger()
                         def currentMinor = preMinor.toInteger()
