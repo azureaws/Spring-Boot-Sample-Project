@@ -59,32 +59,57 @@ pipeline {
                     pomVersion = pomVersion.replaceAll('-SNAPSHOT', '')
 
                     // Split the version string using dot as a delimiter
-                    def (currentMajor, currentMinor, currentPatch, currentBuild) = pomVersion.split('\\.')
-
-                    // Now you can use the individual version components in your pipeline
-                    echo "Major Version: ${currentMajor}"
-                    echo "Minor Version: ${currentMinor}"
-                    echo "Patch Version: ${currentPatch}"
-                    echo "Build Number: ${currentBuild ?: 'Not found'}"
-                    def buildNumber
-                        
-                    if (fileExists(BUILD_NUMBER_FILE)) {
-                        buildNumber = readFile(BUILD_NUMBER_FILE).trim()
+                    def (preMajor, preMinor, prePatch, present2Build) = pomVersion.split('\\.')
+                    
+                    if (releaseType == 'initialbuild' && baseVersion == '1.0.0.1') {  
+                        newVersion = "${preMajor}.${preMinor}.${prePatch}.${present2Build}"
+                        echo "New version: ${newVersion}"
+                    } else if (releaseType == 'build') {   
+                        // Read existing build number or initialize with base build number
+                        def buildNumberFile = "${WORKSPACE}/${BUILD_NUMBER_FILE}"
+                        def buildNumber = fileExists(buildNumberFile) ? readFile(buildNumberFile).trim() : inibaseBuild
+                    
+                        // Parse major, minor, patch, and build numbers from the base version
+                        def baseMajor = inibaseMajor.toInteger()
+                        def baseMinor = inibaseMinor.toInteger()
+                        def basePatch = inibasePatch.toInteger()
+                        def baseBuild = inibaseBuild.toInteger()
+                    
+                        // Parse major, minor, patch, and build numbers from the current version
+                        def currentMajor = preMajor.toInteger()
+                        def currentMinor = preMinor.toInteger()
+                        def currentPatch = prePatch.toInteger()
+                        def currentBuild = present2Build.toInteger()
+                    
+                        if (currentMajor > baseMajor || currentMinor > baseMinor || currentPatch > basePatch) {
+                            // Build number has to start with 1
+                            newVersion = "${currentMajor}.${currentMinor}.${currentPatch}.1"
+                            echo "New version: ${newVersion}"
+                            buildNumber = '1'
+                        } else if (currentMajor == baseMajor && currentMinor == baseMinor && currentPatch == basePatch) {
+                            // Increment the build number
+                            buildNumber = (baseBuild + 1).toString()
+                            newVersion = "${currentMajor}.${currentMinor}.${currentPatch}.${buildNumber}"
+                            echo "New version: ${newVersion}"
+                        } else {
+                            // Reject the build
+                            error "Build rejected: Current version is less than the base version"
+                        }
+                    
+                        // Set the build number in the environment
+                        env.BUILD_NUMBER = buildNumber
+                        echo "Build number: ${buildNumber}"
+                    
+                        // Append build number to the current version for 'build' release type
+                        newVersion = "${newVersion}.${env.BUILD_NUMBER}"
+                        echo "New version: ${newVersion}"
+                    
+                        // Write the updated build number to the file
+                        writeFile file: buildNumberFile, text: buildNumber
                     } else {
-                        buildNumber = currentBuild
-                        echo "Buildnumber:${buildNumber}"
+                        error "Invalid release type or mismatch with the base version. Stopping the pipeline."
                     }
-    
-                   
-                    // Set the build number as an environment variable
-                    env.BUILD_NUMBER = buildNumber
-                    // Set the base version in the environment
-                    env.BASE_VERSION = baseVersion
-                    echo "Base version: ${baseVersion}"
 
-                    // Write the base version back to the file for subsequent builds
-                    writeFile file: baseVersionFile, text: baseVersion
-                    echo "Base version updated in ${BASE_VERSION_FILE}"
                 }
             }
         }
