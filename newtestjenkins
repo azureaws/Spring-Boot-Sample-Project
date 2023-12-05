@@ -46,7 +46,7 @@ pipeline {
                     if (!fileExists(baseVersionFile)) {
                         // For the first build, set the base version to the version in pom.xml
                         echo "Initializing base version to '${pomVersion}'..."
-                        baseVersion = '1.0.0.0'
+                        baseVersion = '1.0.0.1'
                     } else {
                         // For subsequent builds, read the base version from the file
                         baseVersion = readFile(baseVersionFile).trim()
@@ -89,7 +89,7 @@ pipeline {
             }
         }
 
-        stage('Increment Version and Build') {
+        stage('Increment Version and Build based on build') {
             steps {
                 script {
                     def pomVersion = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'version\']/text()" pom.xml', returnStdout: true).trim()
@@ -109,10 +109,10 @@ pipeline {
                     // Split the version string using dot as a delimiter
                     def (currentMajor, currentMinor, currentPatch, currentBuild) = pomVersion.split('\\.')
                     def (inibaseMajor, inibaseMinor, inibasePatch,inibaseBuild) = baseVersion.split('\\.')
-                    if (releaseType == 'initialbuild' && baseVersion == pomVersion) {  
+                    if (releaseType == 'initialbuild' && baseVersion = '1.0.0.0') {  
                         newVersion = "${inibaseMajor}.${inibaseMinor}.${inibasePatch}.${inibaseBuild}"
                         echo "New version: ${newVersion}"
-                    } else if (releaseType == 'build' && currentBuild.toInteger() == inibaseBuild.toInteger() + 1) {                      
+                    } else if (releaseType == 'build' ) {                      
                             newVersion = "${(inibaseBuild.toInteger() + 1)}.0.0"
                      // Remove the '-SNAPSHOT' suffix
                             pomVersion = pomVersion.replaceAll('-SNAPSHOT', '')
