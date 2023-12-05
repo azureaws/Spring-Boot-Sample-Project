@@ -112,16 +112,15 @@ pipeline {
                         newVersion = "${preMajor}.${preMinor}.${prePatch}.${present2Build}"
                         echo "New version: ${newVersion}"
                     } else if (releaseType == 'build') {   
-                        // Read existing build number or initialize with base build number
-                        def buildNumberFile = "${WORKSPACE}/${BUILD_NUMBER_FILE}"
-                        def buildNumber = fileExists(buildNumberFile) ? readFile(buildNumberFile).trim() : baseBuild
         
                         // Parse major, minor, patch, and build numbers from the base version
                         def baseMajor = inibaseMajor.toInteger()
                         def baseMinor = inibaseMinor.toInteger()
                         def basePatch = inibasePatch.toInteger()
                         def baseBuild = inibaseBuild.toInteger()
-        
+                        // Read existing build number or initialize with base build number
+                        def buildNumberFile = "${WORKSPACE}/${BUILD_NUMBER_FILE}"
+                        def buildNumber = fileExists(buildNumberFile) ? readFile(buildNumberFile).trim() : baseBuild
                         // Parse major, minor, patch, and build numbers from the current version
                         def currentMajor = preMajor.toInteger()
                         def currentMinor = preMinor.toInteger()
