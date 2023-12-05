@@ -134,12 +134,13 @@ pipeline {
         
                         if (currentMajor > baseMajor || currentMinor > baseMinor || currentPatch > basePatch) {
                             // Build number has to start with 1
-                            newVersion = "${currentMajor}.${currentMinor}.${currentPatch}.1"
+                            buildNumber = '1'
+                            newVersion = "${currentMajor}.${currentMinor}.${currentPatch}"
                             echo "New version: ${newVersion}"
                         } else if (currentMajor == baseMajor && currentMinor == baseMinor && currentPatch == basePatch) {
                             // Increment the build number
                             buildNumber = (baseBuild + 1).toString()
-                            newVersion = "${currentMajor}.${currentMinor}.${currentPatch}.${buildNumber}"
+                            newVersion = "${currentMajor}.${currentMinor}.${currentPatch}"
                             echo "New version: ${newVersion}"
                         } else {
                             // Reject the build
