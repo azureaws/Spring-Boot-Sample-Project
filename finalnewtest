@@ -1,0 +1,324 @@
+pipeline {
+    agent any
+    tools {
+        maven 'Maven 3.9.4'
+        jdk 'JDK17'
+    }
+    environment {
+        NAMESPACE = '9334-sit1-ifmis'
+        BASE_VERSION_FILE = 'baseversion.txt'
+        BUILD_VERSION_FILE = 'buildversion.txt'
+        BUILD_NUMBER_FILE = "${WORKSPACE}/buildNumber.txt"
+    }
+
+  
+   stages {
+      stage('Maven Build') {
+            steps {
+                script {
+                    withCredentials([
+
+    usernamePassword(credentialsId: 'deploy_9334', passwordVariable: 'REPO_PWD', usernameVariable: 'REPO_USER')
+                                   ]) 
+                    {                   
+                   
+                    sh '''            
+                   
+                    echo "Maven build"
+                    ls -la
+                    '''
+                    }
+               }
+            }
+        }
+        stage('Initialize') {
+            steps {
+                script {
+                    // Read the version from pom.xml
+                    def pomVersion = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'version\']/text()" pom.xml', returnStdout: true).trim()
+                    pomVersion = pomVersion.replaceAll('-SNAPSHOT', '')
+                    echo "POM version: ${pomVersion}"
+                    
+                    // Check if the base version file exists
+                    def baseVersionFile = "${WORKSPACE}/${BASE_VERSION_FILE}"
+                    def baseVersion
+                
+                    if (!fileExists(baseVersionFile)) {
+                        // For the first build, set the base version to the version in pom.xml
+                        echo "Initializing base version to '${pomVersion}'..."
+                        baseVersion = '1.0.0.1'
+                    } else {
+                        // For subsequent builds, read the base version from the file
+                        baseVersion = readFile(baseVersionFile).trim()
+                        echo "Base version read from file: ${baseVersion}"
+                    }
+        
+                    baseVersion = baseVersion.replaceAll('-SNAPSHOT', '')
+                    echo "Base version: ${baseVersion}"
+                    // Remove the '-SNAPSHOT' suffix
+                    pomVersion = pomVersion.replaceAll('-SNAPSHOT', '')
+
+                    // Split the version string using dot as a delimiter
+                    def (currentMajor, currentMinor, currentPatch, currentBuild) = pomVersion.split('\\.')
+
+                    // Now you can use the individual version components in your pipeline
+                    echo "Major Version: ${currentMajor}"
+                    echo "Minor Version: ${currentMinor}"
+                    echo "Patch Version: ${currentPatch}"
+                    echo "Build Number: ${currentBuild ?: 'Not found'}"
+                    def buildNumber
+                        
+                    if (fileExists(BUILD_NUMBER_FILE)) {
+                        buildNumber = readFile(BUILD_NUMBER_FILE).trim()
+                    } else {
+                        buildNumber = currentBuild
+                        echo "Buildnumber:${buildNumber}"
+                    }
+    
+                   
+                    // Set the build number as an environment variable
+                    env.BUILD_NUMBER = buildNumber
+                    // Set the base version in the environment
+                    env.BASE_VERSION = baseVersion
+                    echo "Base version: ${baseVersion}"
+
+                    // Write the base version back to the file for subsequent builds
+                    writeFile file: baseVersionFile, text: baseVersion
+                    echo "Base version updated in ${BASE_VERSION_FILE}"
+                }
+            }
+        }
+
+        stage('Increment Version and Build based on build') {
+            steps {
+                script {
+                    def pomVersion = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'version\']/text()" pom.xml', returnStdout: true).trim()
+                    pomVersion = pomVersion.replaceAll('-SNAPSHOT', '')
+                    echo "POM version: ${pomVersion}"
+
+                      // Read the base version from the environment
+                    def baseVersionFile = "${WORKSPACE}/${BASE_VERSION_FILE}"
+                    def baseVersion = env.BASE_VERSION
+                    echo "Base version: ${baseVersion}"
+
+                    // Increment the version based on the release type
+                    def newVersion
+                    def releaseType = params.releaseType
+                    echo "Release type is: ${releaseType}"
+                   
+                    // Split the version string using dot as a delimiter
+                    def (currentMajor, currentMinor, currentPatch, currentBuild) = pomVersion.split('\\.')
+                    def (inibaseMajor, inibaseMinor, inibasePatch,inibaseBuild) = baseVersion.split('\\.')
+                    if (releaseType == 'initialbuild' && baseVersion = '1.0.0.0') {  
+                        newVersion = "${inibaseMajor}.${inibaseMinor}.${inibasePatch}.${inibaseBuild}"
+                        echo "New version: ${newVersion}"
+                    } else if (releaseType == 'build' ) {                      
+                            newVersion = "${(inibaseBuild.toInteger() + 1)}.0.0"
+                     // Remove the '-SNAPSHOT' suffix
+                            pomVersion = pomVersion.replaceAll('-SNAPSHOT', '')
+
+                            // Split the version string using dot as a delimiter
+                    def (preMajor, preMinor, prePatch, preBuild) = pomVersion.split('\\.')
+                     def buildNumber
+                        
+                    if (fileExists(BUILD_NUMBER_FILE)) {
+                        buildNumber = readFile(BUILD_NUMBER_FILE).trim()
+                    } else {
+                        buildNumber = inibaseBuild
+                        echo "Buildnumber:${buildNumber}"
+                    }        
+                            // Increment the base version for major release
+                            buildNumber = (buildNumber.toInteger() + 1).toString()
+                            echo "Incrementing build number to: ${buildNumber}"
+                            writeFile file: BUILD_NUMBER_FILE, text: buildNumber
+                            writeFile file: BUILD_NUMBER_FILE, text: buildNumber
+                            // Set the build number in the environment
+                            env.BUILD_NUMBER = buildNumber
+                            echo "Build number: ${buildNumber}"
+                            // Append build number to the current version for 'build' release type
+                            newVersion = "${preMajor}.${preMinor}.${prePatch}.${env.BUILD_NUMBER}"
+                            echo "New version: ${newVersion}"
+                    } else if (releaseType == 'major' || releaseType == 'minor' || releaseType == 'patch') {
+                        def (baseMajor, baseMinor, basePatch) = baseVersion.split('\\.')
+                        
+                        if (releaseType == 'major' && currentMajor.toInteger() == baseMajor.toInteger() + 1) {
+                            newVersion = "${(baseMajor.toInteger() + 1)}.0.0"
+                               // Remove the '-SNAPSHOT' suffix
+                            pomVersion = pomVersion.replaceAll('-SNAPSHOT', '')
+
+                            // Split the version string using dot as a delimiter
+                    def (presentMajor, presentMinor, presentPatch, presentBuild) = pomVersion.split('\\.')
+
+                    // Now you can use the individual version components in your pipeline
+                    echo "Major Version: ${presentMajor}"
+                    echo "Minor Version: ${presentMinor}"
+                    echo "Patch Version: ${presentPatch}"
+                    echo "Build Number: ${presentBuild ?: 'Not found'}"
+                    def buildNumber
+                        
+                    if (fileExists(BUILD_NUMBER_FILE)) {
+                        buildNumber = readFile(BUILD_NUMBER_FILE).trim()
+                    } else {
+                        buildNumber = presentBuild
+                        echo "Buildnumber:${buildNumber}"
+                    }
+                            
+                            writeFile file: BUILD_NUMBER_FILE, text: buildNumber
+                            // Set the build number in the environment
+                            env.BUILD_NUMBER = buildNumber
+                            echo "Build number: ${buildNumber}"
+                            // Append build number to the current version for 'build' release type
+                            newVersion = "${newVersion}.${env.BUILD_NUMBER}"
+                            echo "New version: ${newVersion}"
+                        } else if (releaseType == 'minor' && currentMinor.toInteger() == baseMinor.toInteger() + 1) {
+                            //Increment the version for minor release
+                            newVersion = "${baseMajor}.${(baseMinor.toInteger() + 1)}.0"
+                             // Remove the '-SNAPSHOT' suffix
+                            pomVersion = pomVersion.replaceAll('-SNAPSHOT', '')
+
+                            // Split the version string using dot as a delimiter
+                    def (present1Major, present1Minor, present1Patch, present1Build) = pomVersion.split('\\.')
+
+                    // Now you can use the individual version components in your pipeline
+                    echo "Major Version: ${present1Major}"
+                    echo "Minor Version: ${present1Minor}"
+                    echo "Patch Version: ${present1Patch}"
+                    echo "Build Number: ${present1Build ?: 'Not found'}"
+                    def buildNumber
+                        
+                    if (fileExists(BUILD_NUMBER_FILE)) {
+                        buildNumber = readFile(BUILD_NUMBER_FILE).trim()
+                    } else {
+                        buildNumber = present1Build
+                        echo "Buildnumber:${buildNumber}"
+                    }
+        
+                            writeFile file: BUILD_NUMBER_FILE, text: buildNumber
+                            // Set the build number in the environment
+                            env.BUILD_NUMBER = buildNumber
+                            echo "Build number: ${buildNumber}"
+                            // Append build number to the current version for 'build' release type
+                            newVersion = "${newVersion}.${env.BUILD_NUMBER}"
+                            echo "New version: ${newVersion}"
+                        } else if (releaseType == 'patch' && currentPatch.toInteger() == basePatch.toInteger() + 1) {
+                            newVersion = "${baseMajor}.${baseMinor}.${(basePatch.toInteger() + 1)}"
+                            // Increment the base version for patch release
+                    
+                            // Remove the '-SNAPSHOT' suffix
+                            pomVersion = pomVersion.replaceAll('-SNAPSHOT', '')
+
+                            // Split the version string using dot as a delimiter
+                    def (present2Major, present2Minor, present2Patch, present2Build) = pomVersion.split('\\.')
+
+                    // Now you can use the individual version components in your pipeline
+                    echo "Major Version: ${present2Major}"
+                    echo "Minor Version: ${present2Minor}"
+                    echo "Patch Version: ${present2Patch}"
+                    echo "Build Number: ${present2Build ?: 'Not found'}"
+                    def buildNumber
+                        
+                    if (fileExists(BUILD_NUMBER_FILE)) {
+                        buildNumber = readFile(BUILD_NUMBER_FILE).trim()
+                    } else {
+                        buildNumber = present2Build
+                        echo "Buildnumber:${buildNumber}"
+                    }
+
+                            writeFile file: BUILD_NUMBER_FILE, text: buildNumber
+                            // Set the build number in the environment
+                            env.BUILD_NUMBER = buildNumber
+                            echo "Build number: ${buildNumber}"
+                            // Append build number to the current version for 'build' release type
+                            newVersion = "${newVersion}.${env.BUILD_NUMBER}"
+                            echo "New version: ${newVersion}"
+                        } else {
+                            error "Invalid release type or mismatch with base version. Stopping the pipeline."
+                        }
+                    } else {
+                        error "Invalid release type. Stopping the pipeline."
+                    }
+
+                    // Set the base version in the environment
+                    env.BASE_VERSION = newVersion
+                    echo "Base version: ${baseVersion}"
+
+                    
+                    echo "Base version updated in ${BASE_VERSION_FILE}"
+                    // Write newVersion to build_version.txt
+                    def buildVersionFile = "${WORKSPACE}/build_version.txt"
+                    writeFile file: buildVersionFile, text: newVersion
+                    writeFile file: baseVersionFile, text: newVersion
+                    echo "New version written to ${buildVersionFile}"
+
+                    }
+                }
+            }
+
+        
+                       
+                  
+        stage('Docker Build') {
+            steps {
+                script {
+                    def isPodmanBuildNeeded = fileExists("${WORKSPACE}/Dockerfile")
+                    def newVersion = readFile("${WORKSPACE}/build_version.txt")
+                    echo "Using the new version in Docker Build stage: ${newVersion}-SNAPSHOT"
+                    if (isPodmanBuildNeeded) {
+                        echo "Building Docker image with Podman..."
+                        // Use the module
+                        DOCKER_IMAGE_NAME = "artifactory.usps.gov/eir-9334-docker/usps/ifmis-department-location-service-out"
+
+                        // Set environment variables for proxy and temporary directory
+                        withCredentials([usernamePassword(credentialsId: 'deploy_artifactory_9334', passwordVariable: 'ART_PASS', usernameVariable: 'ART_USER')]) {
+                            withEnv(['HTTPS_PROXY=proxy.usps.gov:8080', "TMPDIR=${WORKSPACE}"]) {
+                                echo " "
+                                echo "##########################################################################"
+                                echo "Check images before"
+                                echo "##########################################################################"
+                                sh 'podman images'
+
+                                echo " "
+                                echo "##########################################################################"
+                                echo "Login to Artifactory"
+                                echo "##########################################################################"
+                                sh "podman login -u $ART_USER -p $ART_PASS artifactory.usps.gov"
+
+                                echo " "
+                                echo "##########################################################################"
+                                echo "Build image"
+                                echo "##########################################################################"
+                                sh "podman build -t ${DOCKER_IMAGE_NAME}:${newVersion} . --format docker"
+
+                                echo " "
+                                echo "##########################################################################"
+                                echo "Tag image"
+                                echo "##########################################################################"
+                                sh "podman tag ${DOCKER_IMAGE_NAME}:${newVersion} ${DOCKER_IMAGE_NAME}:${newVersion}"
+
+                                echo " "
+                                echo "##########################################################################"
+                                echo "Push image"
+                                echo "##########################################################################"
+                                sh "podman push -f v2s2 ${DOCKER_IMAGE_NAME}:${newVersion} --format v2s2"
+
+                                echo " "
+                                echo "##########################################################################"
+                                echo "Logout from Artifactory"
+                                echo "##########################################################################"
+                                sh 'podman logout --all'
+
+                                echo " "
+                                echo "##########################################################################"
+                                echo "Images after"
+                                echo "##########################################################################"
+                                sh 'podman images'
+                            }
+                        }
+                    } else {
+                        echo "No Docker build needed as Dockerfile or source files haven't changed."
+                    }
+                }
+            }
+        }
+    }
+}
