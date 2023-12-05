@@ -114,7 +114,7 @@ pipeline {
                     } else if (releaseType == 'build') {   
                         // Read existing build number or initialize with base build number
                         def buildNumberFile = "${WORKSPACE}/${BUILD_NUMBER_FILE}"
-                        def buildNumber = fileExists(buildNumberFile) ? readFile(buildNumberFile).trim() : inibaseBuild
+                        def buildNumber = fileExists(buildNumberFile) ? readFile(buildNumberFile).trim() : baseBuild
         
                         // Parse major, minor, patch, and build numbers from the base version
                         def baseMajor = inibaseMajor.toInteger()
