@@ -113,20 +113,13 @@ pipeline {
                         newVersion = "${inibaseMajor}.${inibaseMinor}.${inibasePatch}.${inibaseBuild}"
                         echo "New version: ${newVersion}"
                     } else if (releaseType == 'build' && currentBuild.toInteger() == inibaseBuild.toInteger() + 1) {                      
-                            def buildNumber1
-                            buildNumber1 = "${(inibaseBuild.toInteger() + 1)}.0.0"
+                            def buildNumber
+                            buildNumber = "${(inibaseBuild.toInteger() + 1)}.0.0"
                      // Remove the '-SNAPSHOT' suffix
                             pomVersion = pomVersion.replaceAll('-SNAPSHOT', '')
 
                             // Split the version string using dot as a delimiter
                     def (preMajor, preMinor, prePatch, preBuild) = pomVersion.split('\\.')
-                    def buildNumber
-                    if (fileExists(BUILD_NUMBER_FILE)) {
-                        buildNumber = readFile(BUILD_NUMBER_FILE).trim()
-                    } else {
-                        buildNumber = buildNumber1
-                        echo "Buildnumber:${buildNumber}"
-                    }
     
                             writeFile file: BUILD_NUMBER_FILE, text: buildNumber
                             // Set the build number in the environment
