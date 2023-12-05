@@ -156,7 +156,7 @@ pipeline {
                         echo "New version: ${newVersion}"
         
                         // Write the updated build number to the file
-                        writeFile file: buildNumberFile, text: buildNumber
+                        writeFile file: BUILD_NUMBER_FILE, text: buildNumber
                     } else {
                         error "Invalid release type or mismatch with the base version. Stopping the pipeline."
                     }
