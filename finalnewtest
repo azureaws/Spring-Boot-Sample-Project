@@ -109,7 +109,6 @@ pipeline {
                     } else {
                         error "Invalid release type or mismatch with the base version. Stopping the pipeline."
                     }
-
                 }
             }
         }
