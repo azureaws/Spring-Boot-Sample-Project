@@ -113,24 +113,18 @@ pipeline {
                         newVersion = "${inibaseMajor}.${inibaseMinor}.${inibasePatch}.${inibaseBuild}"
                         echo "New version: ${newVersion}"
                     } else if (releaseType == 'build' && currentBuild.toInteger() == inibaseBuild.toInteger() + 1) {                      
-                            newVersion = "${(inibaseBuild.toInteger() + 1)}.0.0"
+                            def buildNumber1
+                            buildNumber1 = "${(inibaseBuild.toInteger() + 1)}.0.0"
                      // Remove the '-SNAPSHOT' suffix
                             pomVersion = pomVersion.replaceAll('-SNAPSHOT', '')
 
                             // Split the version string using dot as a delimiter
                     def (preMajor, preMinor, prePatch, preBuild) = pomVersion.split('\\.')
-
-                    // Now you can use the individual version components in your pipeline
-                    echo "Major Version: ${preMajor}"
-                    echo "Minor Version: ${preMinor}"
-                    echo "Patch Version: ${prePatch}"
-                    echo "Build Number: ${preBuild ?: 'Not found'}"
                     def buildNumber
-                        
                     if (fileExists(BUILD_NUMBER_FILE)) {
                         buildNumber = readFile(BUILD_NUMBER_FILE).trim()
                     } else {
-                        buildNumber = preBuild
+                        buildNumber = buildNumber1
                         echo "Buildnumber:${buildNumber}"
                     }
     
