@@ -29,8 +29,8 @@ elif [ "$ENVIRONMENT" == "prod" ]; then
     
     # Exclude Helm folder during production deployment
     echo "Excluding Helm folder for production deployment..."
-    rsync -a --exclude='helm/' cat/ prod/  # Adjust source and destination paths
-    
+    echo "Excluding Helm folder for production deployment..."
+    rsync -a --exclude='helm/' ./ ./    
     # Git commands for production deployment
     echo "Adding changes for prod environment..."
     git add .
