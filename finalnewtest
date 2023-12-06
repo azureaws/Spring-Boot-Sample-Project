@@ -189,9 +189,9 @@ pipeline {
         
                     // Append "-SNAPSHOT" or "-RELEASE" based on the branch
                     if (branchName == 'dev') {
-                        newVersion += '-SNAPSHOT'
+                        newVersion1 = "${newVersion}-SNAPSHOT"
                     } else if (branchName == 'sit') {
-                        newVersion += '-RELEASE'
+                        newVersion1 = "${newVersion}-RELEASE"
                     }
                     echo "Using the new version in Docker Build stage: ${newVersion}"
                     if (isPodmanBuildNeeded) {
