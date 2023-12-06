@@ -185,15 +185,15 @@ pipeline {
                     def isPodmanBuildNeeded = fileExists("${WORKSPACE}/Dockerfile")
                     def newVersion = readFile("${WORKSPACE}/build_version.txt")
                      // Get the branch name from the choice parameter
-                    def branchName = params.branchName
-        
+                    def branchName = params.BRANCH
+                    echo "Branch is: ${branchName}"
                     // Append "-SNAPSHOT" or "-RELEASE" based on the branch
                     if (branchName == 'dev') {
-                        newVersion += '-SNAPSHOT'
+                        newVersion1 = "${newVersion}-SNAPSHOT"
                     } else if (branchName == 'sit') {
-                        newVersion += '-RELEASE'
+                        newVersion1 = "${newVersion}-RELEASE"
                     }
-                    echo "Using the new version in Docker Build stage: ${newVersion}"
+                    echo "Using the new version in Docker Build stage: ${newVersion1}"
                     if (isPodmanBuildNeeded) {
                         echo "Building Docker image with Podman..."
                         // Use the module
@@ -218,19 +218,19 @@ pipeline {
                                 echo "##########################################################################"
                                 echo "Build image"
                                 echo "##########################################################################"
-                                sh "podman build -t ${DOCKER_IMAGE_NAME}:${newVersion} . --format docker"
+                                sh "podman build -t ${DOCKER_IMAGE_NAME}:${newVersion1} . --format docker"
 
                                 echo " "
                                 echo "##########################################################################"
                                 echo "Tag image"
                                 echo "##########################################################################"
-                                sh "podman tag ${DOCKER_IMAGE_NAME}:${newVersion} ${DOCKER_IMAGE_NAME}:${newVersion}"
+                                sh "podman tag ${DOCKER_IMAGE_NAME}:${newVersion} ${DOCKER_IMAGE_NAME}:${newVersion1}"
 
                                 echo " "
                                 echo "##########################################################################"
                                 echo "Push image"
                                 echo "##########################################################################"
-                                sh "podman push -f v2s2 ${DOCKER_IMAGE_NAME}:${newVersion} --format v2s2"
+                                sh "podman push -f v2s2 ${DOCKER_IMAGE_NAME}:${newVersion1} --format v2s2"
 
                                 echo " "
                                 echo "##########################################################################"
