@@ -36,7 +36,6 @@ pipeline {
                 script {
                     // Read the version from pom.xml
                     def pomVersion = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'version\']/text()" pom.xml', returnStdout: true).trim()
-                    pomVersion = pomVersion.replaceAll('-SNAPSHOT', '')
                     echo "POM version: ${pomVersion}"
                     
                     // Check if the base version file exists
@@ -46,17 +45,16 @@ pipeline {
                     if (!fileExists(baseVersionFile)) {
                         // For the first build, set the base version to the version in pom.xml
                         echo "Initializing base version to '${pomVersion}'..."
-                        baseVersion = '1.0.0.1'
+                        baseVersion = pomVersion
                     } else {
                         // For subsequent builds, read the base version from the file
                         baseVersion = readFile(baseVersionFile).trim()
                         echo "Base version read from file: ${baseVersion}"
                     }
         
-                    baseVersion = baseVersion.replaceAll('-SNAPSHOT', '')
                     echo "Base version: ${baseVersion}"
-                    // Remove the '-SNAPSHOT' suffix
-                    pomVersion = pomVersion.replaceAll('-SNAPSHOT', '')
+                    
+                    
 
                     // Split the version string using dot as a delimiter
                     def (currentMajor, currentMinor, currentPatch, currentBuild) = pomVersion.split('\\.')
@@ -93,7 +91,6 @@ pipeline {
             steps {
                 script {
                     def pomVersion = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'version\']/text()" pom.xml', returnStdout: true).trim()
-                    pomVersion = pomVersion.replaceAll('-SNAPSHOT', '')
                     echo "POM version: ${pomVersion}"
 
                       // Read the base version from the environment
@@ -108,7 +105,7 @@ pipeline {
                             // Split the version string using dot as a delimiter
                     def (preMajor, preMinor, prePatch, present2Build) = pomVersion.split('\\.')
                     def (inibaseMajor, inibaseMinor, inibasePatch,inibaseBuild) = baseVersion.split('\\.')
-                    if (releaseType == 'initialbuild' && (baseVersion == pomVersion && pomVersion == '1.0.0.1')) {  
+                    if (releaseType == 'initialbuild' && baseVersion == pomVersion) {  
                         newVersion = "${preMajor}.${preMinor}.${prePatch}.${present2Build}"
                         echo "New version: ${newVersion}"
                     } else if (releaseType == 'build') {   
@@ -132,12 +129,11 @@ pipeline {
                         def currentPatch = prePatch.toInteger()
                         def currentBuild = present2Build.toInteger()
         
-                        if (currentMajor > baseMajor || currentMinor > baseMinor || currentPatch > basePatch) {
-                            // Build number has to start with 1
+                        if ((currentMajor > baseMajor || currentMinor > baseMinor || currentPatch > basePatch) && present2Build.toInteger() == 1) {
                             buildNumber = '1'
                             newVersion = "${currentMajor}.${currentMinor}.${currentPatch}"
                             echo "New version: ${newVersion}"
-                        } else if (currentMajor == baseMajor && currentMinor == baseMinor && currentPatch == basePatch) {
+                        } else if (currentMajor == baseMajor && currentMinor == baseMinor && currentPatch == basePatch && present2Build.toInteger() == inibaseBuild.toInteger() + 1) {
                             // Increment the build number
                             buildNumber = (baseBuild + 1).toString()
                             newVersion = "${currentMajor}.${currentMinor}.${currentPatch}"
@@ -186,19 +182,18 @@ pipeline {
                     def newVersion = readFile("${WORKSPACE}/build_version.txt")
                      // Get the branch name from the choice parameter
                     def branchName = params.BRANCH
-        
                     echo "Branch is: ${branchName}"
                     // Append "-SNAPSHOT" or "-RELEASE" based on the branch
-                    if (branchName == 'dev') {
+                    if (branchName == 'develop') {
                         newVersion1 = "${newVersion}-SNAPSHOT"
-                    } else if (branchName == 'sit') {
+                    } else if (branchName == 'sit-1') {
                         newVersion1 = "${newVersion}-RELEASE"
                     }
                     echo "Using the new version in Docker Build stage: ${newVersion1}"
                     if (isPodmanBuildNeeded) {
                         echo "Building Docker image with Podman..."
                         // Use the module
-                        DOCKER_IMAGE_NAME = "artifactory.usps.gov/eir-9334-docker/usps/ifmis-department-location-service-out"
+                        DOCKER_IMAGE_NAME = "artifactory.usps.gov/eir-9334-release/gov/usps/ifmis-department-location-service-out"
 
                         // Set environment variables for proxy and temporary directory
                         withCredentials([usernamePassword(credentialsId: 'deploy_artifactory_9334', passwordVariable: 'ART_PASS', usernameVariable: 'ART_USER')]) {
