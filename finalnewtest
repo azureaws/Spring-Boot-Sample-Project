@@ -137,7 +137,7 @@ pipeline {
                             buildNumber = '1'
                             newVersion = "${currentMajor}.${currentMinor}.${currentPatch}"
                             echo "New version: ${newVersion}"
-                        } else if (currentMajor == baseMajor && currentMinor == baseMinor && currentPatch == basePatch) {
+                        } else if (currentMajor == baseMajor && currentMinor == baseMinor && currentPatch == basePatch && currentBuild.toInteger() == baseBuild.toInteger() + 1) {
                             // Increment the build number
                             buildNumber = (baseBuild + 1).toString()
                             newVersion = "${currentMajor}.${currentMinor}.${currentPatch}"
