@@ -185,7 +185,7 @@ pipeline {
                     def isPodmanBuildNeeded = fileExists("${WORKSPACE}/Dockerfile")
                     def newVersion = readFile("${WORKSPACE}/build_version.txt")
                      // Get the branch name from the choice parameter
-                    def branchName = params.branchName
+                    def branchName = params.BRANCH
         
                     // Append "-SNAPSHOT" or "-RELEASE" based on the branch
                     if (branchName == 'dev') {
