@@ -186,7 +186,7 @@ pipeline {
                     // Append "-SNAPSHOT" or "-RELEASE" based on the branch
                     if (branchName == 'develop') {
                         newVersion1 = "${newVersion}-SNAPSHOT"
-                    } else if (branchName == 'sit-1') {
+                    } else if (branchName == 'sit') {
                         newVersion1 = "${newVersion}-RELEASE"
                     }
                     echo "Using the new version in Docker Build stage: ${newVersion1}"
