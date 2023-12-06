@@ -186,7 +186,7 @@ pipeline {
                     def newVersion = readFile("${WORKSPACE}/build_version.txt")
                      // Get the branch name from the choice parameter
                     def branchName = params.BRANCH
-                    echo "Branch is: ${branchName}
+                    echo "Branch is: ${branchName}"
                     // Append "-SNAPSHOT" or "-RELEASE" based on the branch
                     if (branchName == 'dev') {
                         newVersion1 = "${newVersion}-SNAPSHOT"
