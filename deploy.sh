@@ -19,6 +19,7 @@ if [ "$ENVIRONMENT" == "cat" ]; then
     
     # Git commands for cat deployment
     echo "Adding changes for cat environment..."
+    git checkout cat
     git add .
     git commit -m "Cat deployment"
     git push origin cat  # Assuming you have a 'cat' branch for cat environment
