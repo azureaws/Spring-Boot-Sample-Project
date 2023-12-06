@@ -32,6 +32,7 @@ elif [ "$ENVIRONMENT" == "prod" ]; then
     echo "Excluding Helm folder for production deployment..."
     rsync -a --exclude='helm/' ./ ./    
     # Git commands for production deployment
+    git checkout prod
     echo "Adding changes for prod environment..."
     git add .
     git commit -m "Production deployment"
