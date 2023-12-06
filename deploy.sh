@@ -29,13 +29,13 @@ elif [ "$ENVIRONMENT" == "prod" ]; then
     
     # Exclude Helm folder during production deployment
     echo "Excluding Helm folder for production deployment..."
-    rsync -a --exclude='Helm/' source/ destination/  # Adjust source and destination paths
+    rsync -a --exclude='helm/' cat/ prod/  # Adjust source and destination paths
     
     # Git commands for production deployment
     echo "Adding changes for prod environment..."
     git add .
     git commit -m "Production deployment"
-    git push origin master  # Assuming you are pushing to the master branch
+    git push origin prod  # Assuming you are pushing to the master branch
 else
     echo "Error: Invalid environment specified"
     exit 1
