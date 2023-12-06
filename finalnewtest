@@ -184,7 +184,16 @@ pipeline {
                 script {
                     def isPodmanBuildNeeded = fileExists("${WORKSPACE}/Dockerfile")
                     def newVersion = readFile("${WORKSPACE}/build_version.txt")
-                    echo "Using the new version in Docker Build stage: ${newVersion}-SNAPSHOT"
+                     // Get the branch name from the choice parameter
+                    def branchName = params.branchName
+        
+                    // Append "-SNAPSHOT" or "-RELEASE" based on the branch
+                    if (branchName == 'dev') {
+                        newVersion += '-SNAPSHOT'
+                    } else if (branchName == 'sit') {
+                        newVersion += '-RELEASE'
+                    }
+                    echo "Using the new version in Docker Build stage: ${newVersion}"
                     if (isPodmanBuildNeeded) {
                         echo "Building Docker image with Podman..."
                         // Use the module
