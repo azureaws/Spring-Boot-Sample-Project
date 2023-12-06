@@ -193,7 +193,7 @@ pipeline {
                     } else if (branchName == 'sit') {
                         newVersion1 = "${newVersion}-RELEASE"
                     }
-                    echo "Using the new version in Docker Build stage: ${newVersion}"
+                    echo "Using the new version in Docker Build stage: ${newVersion1}"
                     if (isPodmanBuildNeeded) {
                         echo "Building Docker image with Podman..."
                         // Use the module
