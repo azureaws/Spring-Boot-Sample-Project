@@ -191,18 +191,23 @@ pipeline {
                      // Get the branch name from the choice parameter
                     def branchName = params.BRANCH
                     echo "Branch is: ${branchName}"
+                    //Define MODULE based on your requirements
+                    def MODULE = "ifmis-department-location-service-out"
+
                     // Append "-SNAPSHOT" or "-RELEASE" based on the branch
                     if (branchName == 'develop') {
                         newVersion1 = "${newVersion}-SNAPSHOT"
+                        DOCKER_IMAGE_FOLDER = 'snapshot'
                     } else if (branchName == 'sit-1') {
                         newVersion1 = "${newVersion}-RELEASE"
+                        DOCKER_IMAGE_FOLDER = 'release'
                     }
+            
+                    // Update DOCKER_IMAGE_NAME based on the branch, MODULE, and DOCKER_IMAGE_FOLDER
+                    def DOCKER_IMAGE_NAME = "artifactory.usps.gov/eir-9334-docker/usps/${MODULE}/${DOCKER_IMAGE_FOLDER}"
                     echo "Using the new version in Docker Build stage: ${newVersion1}"
                     if (isPodmanBuildNeeded) {
                         echo "Building Docker image with Podman..."
-                        // Use the module
-                        DOCKER_IMAGE_NAME = "artifactory.usps.gov/eir-9334-docker/usps/ifmis-department-location-service-out"
-            MODULE = "ifmis-department-location-service-out"
                         // Set environment variables for proxy and temporary directory
                         withCredentials([usernamePassword(credentialsId: 'deploy_artifactory_9334', passwordVariable: 'ART_PASS', usernameVariable: 'ART_USER')]) {
                             withEnv(['HTTPS_PROXY=proxy.usps.gov:8080', "TMPDIR=${WORKSPACE}"]) {
