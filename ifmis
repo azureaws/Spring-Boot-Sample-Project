@@ -109,7 +109,7 @@ pipeline {
                             // Split the version string using dot as a delimiter
                     def (preMajor, preMinor, prePatch, present2Build) = pomVersion.split('\\.')
                     def (inibaseMajor, inibaseMinor, inibasePatch,inibaseBuild) = baseVersion.split('\\.')
-                    if (releaseType == 'initialbuild' && && branchName == 'develop' && (baseVersion == pomVersion && pomVersion == '1.0.0.1')) {  
+                    if (releaseType == 'initialbuild' && branchName == 'develop' && (baseVersion == pomVersion && pomVersion == '1.0.0.1')) {  
                         newVersion = "${preMajor}.${preMinor}.${prePatch}.${present2Build}"
                         echo "New version: ${newVersion}"
             }else if (releaseType == 'initialbuild' && branchName == 'sit' && baseVersion == pomVersion) {  
