@@ -106,7 +106,8 @@ pipeline {
                     def baseVersionFile = "${WORKSPACE}/${BASE_VERSION_FILE}"
                     def baseVersion = env.BASE_VERSION
                     echo "Base version: ${baseVersion}"
-
+                    def baseVersiondev
+                    baseVersiondev =$(cat /Users/rakhee/.jenkins/jobs/devdemo/workspace/ baseversion.txt | tr -d '[:space:]')
                     // Increment the version based on the release type
                     def newVersion
                     def releaseType = params.releaseType
@@ -120,7 +121,7 @@ pipeline {
                     if (releaseType == 'initialbuild' && branchName == 'develop' && (baseVersion == pomVersion && pomVersion == '1.0.0.1')) {  
                         newVersion = "${preMajor}.${preMinor}.${prePatch}.${present2Build}"
                         echo "New version: ${newVersion}"
-            }else if (releaseType == 'initialbuild' && branchName == 'testsit-1' && baseVersion == pomVersion) { 
+            }else if (releaseType == 'initialbuild' && branchName == 'testsit-1' && baseVersion == pomVersion && baseVersiondev == baseVersion) { 
                         newVersion = "${preMajor}.${preMinor}.${prePatch}.${present2Build}"
                         echo "New version: ${newVersion}"
                     
@@ -271,5 +272,3 @@ pipeline {
         }
     }
 }
-
-
