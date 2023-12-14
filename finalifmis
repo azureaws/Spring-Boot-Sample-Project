@@ -107,7 +107,7 @@ pipeline {
                     def baseVersion = env.BASE_VERSION
                     echo "Base version: ${baseVersion}"
                     def baseVersiondev
-                    baseVersiondev =$(cat /Users/rakhee/.jenkins/jobs/devdemo/workspace/ baseversion.txt | tr -d '[:space:]')
+                    baseVersiondev = $(cat /Users/rakhee/.jenkins/jobs/devdemo/workspace/ baseversion.txt | tr -d '[:space:]')
                     // Increment the version based on the release type
                     def newVersion
                     def releaseType = params.releaseType
