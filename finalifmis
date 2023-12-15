@@ -109,6 +109,7 @@ pipeline {
                     def baseVersiondev
                     workspace="/Users/rakhee/.jenkins/jobs/devdemo/workspace"
                     baseVersiondev=sh(script: "cat ${workspace}/baseversion.txt | tr -d '[:space:]'", returnStdout: true).trim()
+                    echo "Base Version from last successful build in develop: ${baseVersiondev}"
                     // Increment the version based on the release type
                     def newVersion
                     def releaseType = params.releaseType
