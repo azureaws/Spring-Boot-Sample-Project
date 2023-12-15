@@ -106,10 +106,9 @@ pipeline {
                     def baseVersionFile = "${WORKSPACE}/${BASE_VERSION_FILE}"
                     def baseVersion = env.BASE_VERSION
                     echo "Base version: ${baseVersion}"
-                    def baseVersiondev
-                    workspace="/Users/rakhee/.jenkins/jobs/devdemo/workspace"
-                    baseVersiondev=sh(script: "cat ${workspace}/baseversion.txt | tr -d '[:space:]'", returnStdout: true).trim()
-                    echo "Base Version from last successful build in develop: ${baseVersiondev}"
+                    def pomXmlContentdev = sh(script: 'git show origin/develop:pom.xml', returnStdout: true).trim()
+                    def pomVersiondev = sh(script: 'echo "$pomXmlContent" | xmllint --xpath "/*[local-name()=\'project\']/*[local-name()=\'version\']/text()" -', returnStdout: true).trim()
+                    echo "POM Version: $pomVersiondev"
                     // Increment the version based on the release type
                     def newVersion
                     def releaseType = params.releaseType
@@ -123,7 +122,7 @@ pipeline {
                     if (releaseType == 'initialbuild' && branchName == 'develop' && (baseVersion == pomVersion && pomVersion == '1.0.0.1')) {  
                         newVersion = "${preMajor}.${preMinor}.${prePatch}.${present2Build}"
                         echo "New version: ${newVersion}"
-            }else if (releaseType == 'initialbuild' && branchName == 'testsit-1' && baseVersion == pomVersion && baseVersiondev == baseVersion) { 
+            }else if (releaseType == 'initialbuild' && branchName == 'testsit-1' && baseVersion == pomVersion && pomVersiondev == baseVersion) { 
                         newVersion = "${preMajor}.${preMinor}.${prePatch}.${present2Build}"
                         echo "New version: ${newVersion}"
                     
