@@ -109,7 +109,7 @@ pipeline {
                     // Get the contents of pom.xml from the dev branch
                     def pomXmlContentdev = sh(script: 'git show origin/develop:pom.xml', returnStdout: true).trim()
                     // Extract version from pom.xml using xmllint
-                    def pomVersion = sh(script: 'echo "${pomXmlContentdev}" | sed -n "s/.*<version>\\(.*\\)<\\/version>.*/\\1/p" | tr -d "[:space:]"', returnStdout: true).trim()
+                    def pomVersiondev = sh(script: 'echo "${pomXmlContentdev}" | sed -n "s/.*<version>\\(.*\\)<\\/version>.*/\\1/p" | tr -d "[:space:]"', returnStdout: true).trim()
                     echo "POM Version (develop): $pomVersiondev"
                     // Increment the version based on the release type
                     def newVersion
