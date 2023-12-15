@@ -107,7 +107,7 @@ pipeline {
                     def baseVersion = env.BASE_VERSION
                     echo "Base version: ${baseVersion}"
                     def pomXmlContentdev = sh(script: 'git show origin/develop:pom.xml', returnStdout: true).trim()
-                    def pomVersiondev = sh(script: 'echo "${pomXmlContentdev}" | grep -oP "<version>\\K[^<]*" | sed "s/ //g"', returnStdout: true).trim()
+                    def pomVersiondev = pomXmlContentdev.replaceAll(/.*<version>\s*|\s*<\/version>.*/, '').replaceAll(/\s/g, '')
                     echo "POM Version: $pomVersiondev"
                     // Increment the version based on the release type
                     def newVersion
