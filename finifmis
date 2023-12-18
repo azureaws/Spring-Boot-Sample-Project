@@ -825,7 +825,6 @@ pipeline {
                 }
             }
         }
-    }
        
         stage('Deploy To SIT Rancher Cluster') {
             steps {
