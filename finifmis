@@ -279,18 +279,21 @@ pipeline {
                     def MODULE = "ifmis-department-location-service-out"
                     def DOCKER_IMAGE_FOLDER
                     def DOCKER_IMAGE_NAME
+                    def newVersion1
 
                     if (branchName == 'develop') {
-                        newVersion = "${newVersion}-SNAPSHOT"
+                        newVersion1 = "${newVersion}-SNAPSHOT"
                         DOCKER_IMAGE_FOLDER = 'snapshot'
+                        NAMESPACE = 9334-dev1-ifmis
                     } else if (branchName == 'testsit-1') {
-                        newVersion = "${newVersion}-RELEASE"
+                        newVersion1 = "${newVersion}-RELEASE"
                         DOCKER_IMAGE_FOLDER = 'release'
+                        NAMESPACE = 9334-sit1-ifmis
                     }
 
                     DOCKER_IMAGE_NAME = "artifactory.usps.gov/eir-9334-docker/usps/${MODULE}/${DOCKER_IMAGE_FOLDER}"
 
-                    env.NEW_VERSION = newVersion
+                    env.NEW_VERSION = newVersion1
                     env.DOCKER_IMAGE_NAME = DOCKER_IMAGE_NAME
 
                     sh '''
@@ -299,7 +302,7 @@ pipeline {
                         curl -LO https://dl.k8s.io/release/v1.24.4/bin/linux/amd64/kubectl > /dev/null 2>&1
                         chmod +x kubectl
 
-                        ./kubectl set image cronjob/${MODULE}-sit ${MODULE}=${DOCKER_IMAGE_NAME}:${NEW_VERSION} -n $NAMESPACE
+                        ./kubectl set image cronjob/${MODULE} ${MODULE}=${DOCKER_IMAGE_NAME}:${newVersion1} -n $NAMESPACE
                     '''
                 }
             }
