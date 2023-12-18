@@ -744,21 +744,17 @@ pipeline {
                 }
             }
 
-       
-                       
-                  
         stage('Docker Build') {
             steps {
                 script {
                     def isPodmanBuildNeeded = fileExists("${WORKSPACE}/Dockerfile")
                     def newVersion = readFile("${WORKSPACE}/build_version.txt")
-                    // Get the branch name from the choice parameter
                     def branchName = params.BRANCH
                     echo "Branch is: ${branchName}"
-                    //Define MODULE based on your requirements
                     def MODULE = "ifmis-department-location-service-out"
+                    def DOCKER_IMAGE_FOLDER
+                    def newVersion1
 
-                    // Append "-SNAPSHOT" or "-RELEASE" based on the branch
                     if (branchName == 'develop') {
                         newVersion1 = "${newVersion}-SNAPSHOT"
                         DOCKER_IMAGE_FOLDER = 'snapshot'
@@ -766,14 +762,14 @@ pipeline {
                         newVersion1 = "${newVersion}-RELEASE"
                         DOCKER_IMAGE_FOLDER = 'release'
                     }
-            
-                    // Update DOCKER_IMAGE_NAME based on the branch, MODULE, and DOCKER_IMAGE_FOLDER
+
                     def DOCKER_IMAGE_NAME = "artifactory.usps.gov/eir-9334-docker/usps/${MODULE}/${DOCKER_IMAGE_FOLDER}"
                     echo "Using the new version in Docker Build stage: ${newVersion1}"
+
                     if (isPodmanBuildNeeded) {
                         echo "Building Docker image with Podman..."
                         echo "DOCKER_IMAGE_NAME: ${DOCKER_IMAGE_NAME}"
-                        // Set environment variables for proxy and temporary directory
+
                         withCredentials([usernamePassword(credentialsId: 'deploy_artifactory_9334', passwordVariable: 'ART_PASS', usernameVariable: 'ART_USER')]) {
                             withEnv(['HTTPS_PROXY=proxy.usps.gov:8080', "TMPDIR=${WORKSPACE}"]) {
                                 echo " "
@@ -825,7 +821,7 @@ pipeline {
                 }
             }
         }
-       
+
         stage('Deploy To SIT Rancher Cluster') {
             steps {
                 script {
@@ -834,7 +830,8 @@ pipeline {
                     echo "Branch is: ${branchName}"
                     def MODULE = "ifmis-department-location-service-out"
                     def DOCKER_IMAGE_FOLDER
-                   
+                    def DOCKER_IMAGE_NAME
+
                     if (branchName == 'develop') {
                         newVersion = "${newVersion}-SNAPSHOT"
                         DOCKER_IMAGE_FOLDER = 'snapshot'
@@ -842,20 +839,18 @@ pipeline {
                         newVersion = "${newVersion}-RELEASE"
                         DOCKER_IMAGE_FOLDER = 'release'
                     }
-                   
-                    def DOCKER_IMAGE_NAME = "artifactory.usps.gov/eir-9334-docker/usps/${MODULE}/${DOCKER_IMAGE_FOLDER}"
-                   
-                    // Set environment variables for later use in the pipeline
+
+                    DOCKER_IMAGE_NAME = "artifactory.usps.gov/eir-9334-docker/usps/${MODULE}/${DOCKER_IMAGE_FOLDER}"
+
                     env.NEW_VERSION = newVersion
                     env.DOCKER_IMAGE_NAME = DOCKER_IMAGE_NAME
 
-                    // Continue with the original deployment steps, including the module name
                     sh '''
                         ls
                         export KUBECONFIG="./erad13-config.yaml"
                         curl -LO https://dl.k8s.io/release/v1.24.4/bin/linux/amd64/kubectl > /dev/null 2>&1
-                        chmod +x kubectl                                    
-                       
+                        chmod +x kubectl
+
                         ./kubectl set image cronjob/${MODULE}-sit ${MODULE}=${DOCKER_IMAGE_NAME}:${NEW_VERSION} -n $NAMESPACE
                     '''
                 }
