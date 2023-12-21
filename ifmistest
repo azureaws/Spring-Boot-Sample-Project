@@ -220,14 +220,6 @@ pipeline {
                     writeFile file: baseVersionFile, text: newVersion
                     echo "New version written to ${buildVersionFile}"
                    
-
-                    env.BASE_VERSION = newVersion
-                    echo "Base version: ${baseVersion}"
-
-                    def buildVersionFile = "${WORKSPACE}/build_version.txt"
-                    writeFile file: buildVersionFile, text: newVersion
-                    writeFile file: baseVersionFile, text: newVersion
-                    echo "New version written to ${buildVersionFile}"
                 }
             }
         }
