@@ -113,7 +113,6 @@ pipeline {
                     def baseVersionFile = "${WORKSPACE}/${BASE_VERSION_FILE}"
                     def baseVersion = env.BASE_VERSION
                     echo "Base version: ${baseVersion}"
-                    echo "POM Version develop: ${pomVersiondev}"
                     // Increment the version based on the release type
                     def newVersion
                     def releaseType = params.releaseType
