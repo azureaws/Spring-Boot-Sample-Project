@@ -10,6 +10,7 @@ pipeline {
         BUILD_NUMBER_FILE = "${WORKSPACE}/buildNumber.txt"
         BUILD_SUCCESS_FILE = "${WORKSPACE}/buildSuccess"
         POM_VERSION_DEV_FILE = "${WORKSPACE}/pomVersionDev.txt"
+        DOCKER_BUILD_SUCCESS_FILE = "${WORKSPACE}/dockerBuildSuccess" 
     }
 
     stages {
