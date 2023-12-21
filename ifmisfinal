@@ -118,10 +118,10 @@ pipeline {
                     def newVersion
                     def releaseType = params.releaseType
                     echo "Release type is: ${releaseType}"
-            // Get the branch name from the choice parameter
+                    // Get the branch name from the choice parameter
                     def branchName = params.BRANCH
                     echo "Branch is: ${branchName}"
-                    / Read the POM version from the develop branch file
+                    // Read the POM version from the develop branch file
                     def pomVersionDev = readFile(POM_VERSION_DEV_FILE).trim()
                     echo "POM version in develop branch: ${pomVersionDev}"
                     // Split the version string using dot as a delimiter
