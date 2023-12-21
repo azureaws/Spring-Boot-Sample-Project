@@ -129,7 +129,7 @@ pipeline {
                     if (releaseType == 'initialbuild' && branchName == 'develop' && (baseVersion == pomVersion && pomVersion == '1.0.0.1')) {  
                         newVersion = "${preMajor}.${preMinor}.${prePatch}.${present2Build}"
                         echo "New version: ${newVersion}"
-            }else if (releaseType == 'initialbuild' && branchName == 'testsit-1' && baseVersion == pomVersion && pomVersiondev == baseVersion) { 
+            }else if (releaseType == 'initialbuild' && branchName == 'testsit-1' && baseVersion == pomVersion && pomVersionDev == baseVersion) { 
                         newVersion = "${preMajor}.${preMinor}.${prePatch}.${present2Build}"
                         echo "New version: ${newVersion}"
                     
