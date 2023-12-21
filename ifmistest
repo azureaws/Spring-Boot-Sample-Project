@@ -34,7 +34,7 @@ pipeline {
                 script {
                     def pomXmlContentdev = sh(script: "git show origin/develop:pom.xml", returnStdout: true).trim()
                     // Extract version from pom.xml using grep and cut
-                    def pomVersionDev = sh(script: "echo '${pomXmlContentdev}' | grep -o '<version>.*</version>' | cut -d'>' -f2 | cut -d'<' -f1 | sed -n 2p", returnStdout: true).trim(
+                    def pomVersionDev = sh(script: "echo '${pomXmlContentdev}' | grep -o '<version>.*</version>' | cut -d'>' -f2 | cut -d'<' -f1 | sed -n 2p", returnStdout: true).trim()
                     echo "POM Version develop: ${pomVersionDev}"
                     // Write the POM version from develop branch to a file
                     writeFile file: POM_VERSION_DEV_FILE, text: pomVersionDev
