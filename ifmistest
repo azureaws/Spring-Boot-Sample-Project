@@ -133,7 +133,7 @@ pipeline {
             when {
                 expression {
                     // Only run if the Initialize stage was successful
-                    return fileExists(BUILD_SUCCESS_FILE)
+                    return fileExists(BUILD_SUCCESS_FILE) && !fileExists(DOCKER_BUILD_SUCCESS_FILE)
                 }
             }
             steps {
@@ -152,7 +152,14 @@ pipeline {
                         newVersion1 = "${newVersion}-RELEASE"
                         DOCKER_IMAGE_FOLDER = 'release'
                     }
-
+                    // If the build is successful, create a file indicating Docker build success
+                    def dockerBuildSuccess = true  // Replace this with your actual Docker build success check logic
+                    if (dockerBuildSuccess) {
+                        // Simulate touch command by creating an empty file
+                        writeFile file: DOCKER_BUILD_SUCCESS_FILE, text: ''
+                    } else {
+                        error "Docker build failed. Cannot proceed with the Docker Build."
+                    }
                     def DOCKER_IMAGE_NAME = "artifactory.usps.gov/eir-9334-docker/usps/${MODULE}/${DOCKER_IMAGE_FOLDER}"
                     echo "Using the new version in Docker Build stage: ${newVersion1}"
                     if (isPodmanBuildNeeded) {
