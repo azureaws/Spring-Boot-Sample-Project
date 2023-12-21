@@ -53,9 +53,7 @@ pipeline {
             def branchName = params.BRANCH
             echo "Branch is: ${branchName}"
 
-            // Read the POM version from the develop branch file
-            def pomVersionDev = readFile(POM_VERSION_DEV_FILE).trim()
-            echo "POM version in develop branch: ${pomVersionDev}"
+         
 
             // Split the version string using dot as a delimiter
             def (preMajor, preMinor, prePatch, present2Build) = pomVersion.split('\\.')
