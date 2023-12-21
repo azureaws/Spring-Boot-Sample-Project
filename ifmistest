@@ -133,7 +133,7 @@ pipeline {
             when {
                 expression {
                     // Only run if the Initialize stage was successful
-                    return fileExists(BUILD_SUCCESS_FILE)
+                    return fileExists(BUILD_SUCCESS_FILE) && env.BASE_VERSION != '1.0.0.1'
                 }
             }
             steps {
