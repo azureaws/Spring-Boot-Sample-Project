@@ -33,9 +33,10 @@ pipeline {
             steps {
                 script {
                     // Read pomVersionDev from the file
-                    def pomVersiondev = readFile(POM_VERSION_DEV_FILE).trim()
-                    echo "POM Version develop: ${pomVersiondev}"
-
+                    def pomVersionDev = readFile(POM_VERSION_DEV_FILE).trim()
+                    echo "POM Version develop: ${pomVersionDev}"
+                    // Write the POM version from develop branch to a file
+                    writeFile file: POM_VERSION_DEV_FILE, text: pomVersionDev
                     def baseVersionFile = "${WORKSPACE}/${BASE_VERSION_FILE}"
                     def baseVersion
                     def branchParameter = params.BRANCH
