@@ -39,8 +39,6 @@ pipeline {
             def pomXmlContentdev = sh(script: "git show origin/develop:pom.xml", returnStdout: true).trim()
             def pomVersiondev = sh(script: "echo '${pomXmlContentdev}' | grep -o '<version>.*</version>' | cut -d'>' -f2 | cut -d'<' -f1 | sed -n 2p", returnStdout: true).trim()
             echo "POM Version develop: ${pomVersiondev}"
-            def releaseType = params.releaseType
-            echo "Release type is: ${releaseType}"
 
             // Save pomVersiondev to file
             writeFile file: POM_VERSION_DEV_FILE, text: pomVersiondev
