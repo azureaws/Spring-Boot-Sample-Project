@@ -35,9 +35,12 @@ pipeline {
             def baseVersionFile = "${WORKSPACE}/${BASE_VERSION_FILE}"
             def baseVersion
             def branchParameter = params.BRANCH
+            echo "Branch is: ${branchParameter}"
             def pomXmlContentdev = sh(script: "git show origin/develop:pom.xml", returnStdout: true).trim()
             def pomVersiondev = sh(script: "echo '${pomXmlContentdev}' | grep -o '<version>.*</version>' | cut -d'>' -f2 | cut -d'<' -f1 | sed -n 2p", returnStdout: true).trim()
             echo "POM Version develop: ${pomVersiondev}"
+            def releaseType = params.releaseType
+            echo "Release type is: ${releaseType}"
 
             // Save pomVersiondev to file
             writeFile file: POM_VERSION_DEV_FILE, text: pomVersiondev
@@ -128,9 +131,13 @@ pipeline {
     }
 }
 
-      
-
         stage('Docker Build') {
+            when {
+                expression {
+                    // Only run if the Initialize stage was successful
+                    return fileExists(BUILD_SUCCESS_FILE)
+                }
+            }
             steps {
                 script {
                     def isPodmanBuildNeeded = fileExists("${WORKSPACE}/Dockerfile")
@@ -150,7 +157,6 @@ pipeline {
 
                     def DOCKER_IMAGE_NAME = "artifactory.usps.gov/eir-9334-docker/usps/${MODULE}/${DOCKER_IMAGE_FOLDER}"
                     echo "Using the new version in Docker Build stage: ${newVersion1}"
-
                     if (isPodmanBuildNeeded) {
                         echo "Building Docker image with Podman..."
                         echo "DOCKER_IMAGE_NAME: ${DOCKER_IMAGE_NAME}"
