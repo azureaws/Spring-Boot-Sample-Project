@@ -176,6 +176,16 @@ pipeline {
         stage('Docker Build') {
             steps {
                 script {
+                      if (releaseType == 'initialbuild') {
+                        // Get the previous build result
+                        def previousBuildResult = currentBuild.previousBuild?.result
+        
+                        // Check if the previous build was successful
+                        if (previousBuildResult == 'SUCCESS') {
+                            echo "Skipping Docker build for 'initialbuild' since the previous build was successful."
+                            return // Skip the rest of the stage
+                        }
+                    }
                     def isPodmanBuildNeeded = fileExists("${WORKSPACE}/Dockerfile")
                     def newVersion = readFile("${WORKSPACE}/build_version.txt")
                     // Get the branch name from the choice parameter
