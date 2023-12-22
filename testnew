@@ -203,8 +203,8 @@ pipeline {
                              echo "Building Docker image with Podman..."
                         echo "DOCKER_IMAGE_NAME: ${DOCKER_IMAGE_NAME}"
                         // Set environment variables for proxy and temporary directory
-                        withCredentials([usernamePassword(credentialsId: 'deploy_artifactory_9334', passwordVariable: 'ART_PASS', usernameVariable: 'ART_USER')]) {
-                            withEnv(['HTTPS_PROXY=proxy.usps.gov:8080', "TMPDIR=${WORKSPACE}"]) {
+                        withCredentials([usernamePassword(credentialsId: 'deploy_9334', passwordVariable: 'REPO_PWD', usernameVariable: 'REPO_USER')
+                                ]) {  
                                 echo " "
                                 echo "##########################################################################"
                                 echo "Check images before"
