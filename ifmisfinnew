@@ -26,9 +26,11 @@ pipeline {
             }
             post {
                 failure {
-                    echo "Maven Build failed. Stopping the pipeline."
-                    currentBuild.result = 'FAILURE'
-                    error "Maven Build failed"
+                    script {
+                        echo "Maven Build failed. Stopping the pipeline."
+                        currentBuild.result = 'FAILURE'
+                        error "Maven Build failed"
+                    }
                 }
             }
         }
@@ -151,13 +153,14 @@ pipeline {
             }
             post {
                 failure {
-                    echo "Initialize and Increment Version failed. Stopping the pipeline."
-                    currentBuild.result = 'FAILURE'
-                    error "Initialize and Increment Version failed"
+                    script {
+                        echo "Initialize and Increment Version failed. Stopping the pipeline."
+                        currentBuild.result = 'FAILURE'
+                        error "Initialize and Increment Version failed"
+                    }
                 }
             }
         }
-
         stage('Docker Build') {
             steps {
                 script {
@@ -239,11 +242,13 @@ pipeline {
                     }
                 }
             }
-            post {
+             post {
                 failure {
-                    echo "Docker Build failed. Stopping the pipeline."
-                    currentBuild.result = 'FAILURE'
-                    error "Docker Build failed"
+                    script {
+                        echo "Docker Build failed. Stopping the pipeline."
+                        currentBuild.result = 'FAILURE'
+                        error "Docker Build failed"
+                    }
                 }
             }
         }
