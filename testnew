@@ -174,95 +174,98 @@ pipeline {
             }
         }
         stage('Docker Build') {
-            steps {
-                script {
-                    def isPodmanBuildNeeded = fileExists("${WORKSPACE}/Dockerfile")
-                    def newVersion = readFile("${WORKSPACE}/build_version.txt")
-                    // Get the branch name from the choice parameter
-                    def branchName = params.BRANCH
-                    echo "Branch is: ${branchName}"
-                    // Define MODULE based on your requirements
-                    def MODULE = params.Module
-                    echo "Module is: ${MODULE}"
+    steps {
+        script {
+            def isPodmanBuildNeeded = fileExists("${WORKSPACE}/Dockerfile")
+            def newVersion = readFile("${WORKSPACE}/build_version.txt")
+            
+            // Get the branch name from the choice parameter
+            def branchName = params.BRANCH
+            echo "Branch is: ${branchName}"
+            
+            // Define MODULE based on your requirements
+            def MODULE = params.Module
+            echo "Module is: ${MODULE}"
 
-                    // Append "-SNAPSHOT" or "-RELEASE" based on the branch
-                    if (branchName == 'develop') {
-                        newVersion1 = "${newVersion}-SNAPSHOT"
-                        DOCKER_IMAGE_FOLDER = 'snapshot'
-                    } else if (branchName == 'testsit-1') {
-                        newVersion1 = "${newVersion}-RELEASE"
-                        DOCKER_IMAGE_FOLDER = 'release'
-                    }
+            // Append "-SNAPSHOT" or "-RELEASE" based on the branch
+            def newVersion1
+            def DOCKER_IMAGE_FOLDER
+            
+            if (branchName == 'develop') {
+                newVersion1 = "${newVersion}-SNAPSHOT"
+                DOCKER_IMAGE_FOLDER = 'snapshot'
+            } else if (branchName == 'testsit-1') {
+                newVersion1 = "${newVersion}-RELEASE"
+                DOCKER_IMAGE_FOLDER = 'release'
+            }
 
-                    // Update DOCKER_IMAGE_NAME based on the branch, MODULE, and DOCKER_IMAGE_FOLDER
-                    def DOCKER_IMAGE_NAME = "artifactory.usps.gov/eir-9334-docker/usps/${MODULE}/${DOCKER_IMAGE_FOLDER}"
-                    echo "Using the new version in Docker Build stage: ${newVersion1}"
+            // Update DOCKER_IMAGE_NAME based on the branch, MODULE, and DOCKER_IMAGE_FOLDER
+            def DOCKER_IMAGE_NAME = "artifactory.usps.gov/eir-9334-docker/usps/${MODULE}/${DOCKER_IMAGE_FOLDER}"
+            echo "Using the new version in Docker Build stage: ${newVersion1}"
+            
+            catchError(buildResult: 'FAILURE') {
+                if (isPodmanBuildNeeded) {
+                    echo "Building Docker image with Podman..."
+                    echo "DOCKER_IMAGE_NAME: ${DOCKER_IMAGE_NAME}"
                     
-                    catchError(buildResult: 'FAILURE') {
-                        if (isPodmanBuildNeeded) {
-                             echo "Building Docker image with Podman..."
-                        echo "DOCKER_IMAGE_NAME: ${DOCKER_IMAGE_NAME}"
-                        // Set environment variables for proxy and temporary directory
-                        withCredentials([
-                            usernamePassword(credentialsId: 'deploy_9334', passwordVariable: 'REPO_PWD', usernameVariable: 'REPO_USER')
-                        ]) {                    
-                                echo " "
-                                echo "##########################################################################"
-                                echo "Check images before"
-                                echo "##########################################################################"
-                                sh 'ls'
+                    // Set environment variables for proxy and temporary directory
+                    withCredentials([
+                        usernamePassword(credentialsId: 'deploy_9334', passwordVariable: 'REPO_PWD', usernameVariable: 'REPO_USER')
+                    ]) {                    
+                        echo " "
+                        echo "##########################################################################"
+                        echo "Check images before"
+                        echo "##########################################################################"
+                        sh 'ls'
 
-                                echo " "
-                                echo "##########################################################################"
-                                echo "Login to Artifactory"
-                                echo "##########################################################################"
-                                sh "ls"
+                        echo " "
+                        echo "##########################################################################"
+                        echo "Login to Artifactory"
+                        echo "##########################################################################"
+                        sh "ls"
 
-                                echo " "
-                                echo "##########################################################################"
-                                echo "Build image"
-                                echo "##########################################################################"
-                                sh "ls"
+                        echo " "
+                        echo "##########################################################################"
+                        echo "Build image"
+                        echo "##########################################################################"
+                        sh "ls"
 
-                                echo " "
-                                echo "##########################################################################"
-                                echo "Tag image"
-                                echo "##########################################################################"
-                                sh "ls"
+                        echo " "
+                        echo "##########################################################################"
+                        echo "Tag image"
+                        echo "##########################################################################"
+                        sh "ls"
 
-                                echo " "
-                                echo "##########################################################################"
-                                echo "Push image"
-                                echo "##########################################################################"
-                                sh "ls"
+                        echo " "
+                        echo "##########################################################################"
+                        echo "Push image"
+                        echo "##########################################################################"
+                        sh "ls"
 
-                                echo " "
-                                echo "##########################################################################"
-                                echo "Logout from Artifactory"
-                                echo "##########################################################################"
-                                sh 'ls'
+                        echo " "
+                        echo "##########################################################################"
+                        echo "Logout from Artifactory"
+                        echo "##########################################################################"
+                        sh 'ls'
 
-                                echo " "
-                                echo "##########################################################################"
-                                echo "Images after"
-                                echo "##########################################################################"
-                                sh 'ls'
-                            }
-                          }
-                        } else {
-                            echo "No Docker build needed as Dockerfile or source files haven't changed."
-                        }
+                        echo " "
+                        echo "##########################################################################"
+                        echo "Images after"
+                        echo "##########################################################################"
+                        sh 'ls'
                     }
+                } else {
+                    echo "No Docker build needed as Dockerfile or source files haven't changed."
                 }
             }
-             post {
-                failure {
-                    script {
-                        echo "Docker Build failed. Stopping the pipeline."
-                        currentBuild.result = 'FAILURE'
-                        error "Docker Build failed"
-                    }
-                }
+        }
+    }
+    post {
+        failure {
+            script {
+                echo "Docker Build failed. Stopping the pipeline."
+                currentBuild.result = 'FAILURE'
+                error "Docker Build failed"
             }
         }
     }
