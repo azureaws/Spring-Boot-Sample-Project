@@ -204,8 +204,8 @@ pipeline {
                         echo "DOCKER_IMAGE_NAME: ${DOCKER_IMAGE_NAME}"
                         // Set environment variables for proxy and temporary directory
                         withCredentials([
-                         usernamePassword(credentialsId: 'deploy_9334', passwordVariable: 'REPO_PWD', usernameVariable: 'REPO_USER')
-                        ]) {   
+                            usernamePassword(credentialsId: 'deploy_9334', passwordVariable: 'REPO_PWD', usernameVariable: 'REPO_USER')
+                        ]) {  
                                 echo " "
                                 echo "##########################################################################"
                                 echo "Check images before"
@@ -228,7 +228,7 @@ pipeline {
                                 echo "##########################################################################"
                                 echo "Tag image"
                                 echo "##########################################################################"
-                                sh "podman tag ${MODULE} ${DOCKER_IMAGE_NAME}:${newVersion1}"
+                                sh "ls"
 
                                 echo " "
                                 echo "##########################################################################"
@@ -248,7 +248,6 @@ pipeline {
                                 echo "##########################################################################"
                                 sh 'ls'
                             }
-                        }
                     } else {
                             echo "No Docker build needed as Dockerfile or source files haven't changed."
                         }
