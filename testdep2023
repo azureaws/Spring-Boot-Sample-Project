@@ -58,7 +58,7 @@ pipeline {
 
                     // Extract version from pom.xml using grep and cut
                     def pomVersionSit = sh(script: "echo '${pomXmlContentSit}' | grep -o '<version>.*</version>' | cut -d'>' -f2 | cut -d'<' -f1 | sed -n 2p", returnStdout: true).trim()
-                    echo "POM Version develop: ${pomVersionSit}"
+                    echo "POM Version SIT: ${pomVersionSit}"
 
                     // Write the POM version from develop branch to a file
                     writeFile file: POM_VERSION_SIT_FILE, text: pomVersionSit
