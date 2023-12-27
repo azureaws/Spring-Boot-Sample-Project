@@ -68,7 +68,7 @@ pipeline {
 
                     // Validate and update base version
                     if (baseVersion == null) {
-                        error "Invalid state. Pom.xml needs to be updated accordingly.Stopping the pipeline."
+                        error "Invalid state. Pom.xml needs to be updated accordingly or Baseversion not updated Please run initialbuild.Stopping the pipeline."
                     } else {
                         echo "Base version: ${baseVersion.replaceAll('-SNAPSHOT', '')}"
                     }
