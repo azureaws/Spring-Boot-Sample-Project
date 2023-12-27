@@ -98,7 +98,7 @@ pipeline {
                         }
                     }
 
-
+                    def devSitSyncSuccess = false
                     if (releaseType == 'initialbuild' && branchName == 'develop' && (baseVersion == pomVersion && pomVersion == '1.1.0.1')) {  
                         
                         newVersion = "${preMajor}.${preMinor}.${prePatch}.${present2Build}"
@@ -106,9 +106,30 @@ pipeline {
                     } else if (releaseType == 'initialbuild' && branchName == 'testsit-1' && baseVersion == pomVersion && pomVersionDev == baseVersion) { 
                         newVersion = "${preMajor}.${preMinor}.${prePatch}.${present2Build}"
                         echo "New version: ${newVersion}"
-                    } else if (releaseType == 'devsitversionsync' && branchName == 'develop' &&  pomVersionDev == pomVersionSit) { 
-                        newVersion = "${preMajor}.${preMinor}.${prePatch}.${present2Build}"
-                        echo "New version: ${newVersion}"
+                    } else if (releaseType == 'devsitversionsync' && branchName == 'develop' &&  pomVersionDev == pomVersionSit && baseVersion != null && !devSitSyncSuccess) { 
+                        try {
+                            // Logic for syncing dev and sit versions
+                            // For example, updating version numbers, merging configuration files, etc.
+                    
+                            // Simulate a successful sync
+                            // Replace this with your actual logic
+                            def syncSuccessful = true
+                    
+                            if (syncSuccessful) {
+                                newVersion = "${preMajor}.${preMinor}.${prePatch}.${present2Build}"
+                                echo "New version: ${newVersion}"
+                    
+                                // Set the flag to true after successful sync
+                                devSitSyncSuccess = true
+                            } else {
+                                // Handle the case where the sync failed
+                                echo "Dev and Sit version sync failed."
+                            }
+                        } catch (Exception e) {
+                            // Handle the exception or log the error as needed
+                            echo "Error syncing dev and sit versions: ${e.message}"
+                        }
+                    }
                     } else if (releaseType == 'build') {   
                         // Parse major, minor, patch, and build numbers from the base version
                         def baseMajor = inibaseMajor.toInteger()
