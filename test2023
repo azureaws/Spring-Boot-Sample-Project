@@ -100,6 +100,9 @@ pipeline {
                     } else if (releaseType == 'initialbuild' && branchName == 'testsit-1' && baseVersion == pomVersion && pomVersionDev == baseVersion) { 
                         newVersion = "${preMajor}.${preMinor}.${prePatch}.${present2Build}"
                         echo "New version: ${newVersion}"
+                    } else if (releaseType == 'devsitversionsync' && branchName == 'develop' &&  pomVersionDev == pomVersion) { 
+                        newVersion = "${preMajor}.${preMinor}.${prePatch}.${present2Build}"
+                        echo "New version: ${newVersion}"
                     } else if (releaseType == 'build') {   
                         // Parse major, minor, patch, and build numbers from the base version
                         def baseMajor = inibaseMajor.toInteger()
