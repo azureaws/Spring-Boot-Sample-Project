@@ -108,11 +108,14 @@ pipeline {
                         echo "New version: ${newVersion}"
                     } else if (releaseType == 'devsitversionsync' && branchName == 'develop' &&  pomVersionDev == pomVersionSit && baseVersion != null && !devSitSyncSuccess) { 
                         try {
-                            // Logic for syncing dev and sit versions
-                            // For example, updating version numbers, merging configuration files, etc.
-                    
-                            // Simulate a successful sync
-                            // Replace this with your actual logic
+                            def previousBuildResult = currentBuild.previousBuild?.result
+    
+                            // Check if the previous build was successful
+                            if (previousBuildResult == 'SUCCESS') {
+                                echo "Skipping initialization for 'devsitversionsync' since the previous build was successful."
+                                return // Skip the rest of the stage
+                            }
+
                             def syncSuccessful = true
                     
                             if (syncSuccessful) {
