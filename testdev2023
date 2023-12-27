@@ -128,7 +128,6 @@ pipeline {
                         } catch (Exception e) {
                             // Handle the exception or log the error as needed
                             echo "Error syncing dev and sit versions: ${e.message}"
-                        }
                     }
                     } else if (releaseType == 'build') {   
                         // Parse major, minor, patch, and build numbers from the base version
