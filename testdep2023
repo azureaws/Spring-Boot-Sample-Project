@@ -8,6 +8,7 @@ pipeline {
         NAMESPACE = '9334-dev1-ifmis'
         BASE_VERSION_FILE = 'baseversion.txt'
         BUILD_VERSION_FILE = 'buildversion.txt'
+        BUILD_NUMBER_FILE = "${WORKSPACE}/buildNumber.txt"
         POM_VERSION_DEV_FILE = "${WORKSPACE}/pomVersionDev.txt"
         POM_VERSION_SIT_FILE = "${WORKSPACE}/pomVersionSit.txt"
     }
