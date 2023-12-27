@@ -107,15 +107,17 @@ pipeline {
                         newVersion = "${preMajor}.${preMinor}.${prePatch}.${present2Build}"
                         echo "New version: ${newVersion}"
                     } else if (releaseType == 'devsitversionsync' && branchName == 'develop' &&  pomVersionDev == pomVersionSit && baseVersion != null && !devSitSyncSuccess) { 
-                        try {
+                        if (releaseType == 'devsitversionsync') {
+                            // Get the previous build result
                             def previousBuildResult = currentBuild.previousBuild?.result
     
                             // Check if the previous build was successful
                             if (previousBuildResult == 'SUCCESS') {
-                                echo "Skipping initialization for 'devsitversionsync' since the previous build was successful."
+                                echo "Skipping initialization for 'initialbuild' since the previous build was successful."
                                 return // Skip the rest of the stage
-                            }
-
+                        }
+                    }
+                        try {
                             def syncSuccessful = true
                     
                             if (syncSuccessful) {
