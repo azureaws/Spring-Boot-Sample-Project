@@ -172,7 +172,8 @@ pipeline {
             		    // Commit and push the changes back to the 'develop' branch
             		    sh "git add ${baseVersionFile}"
             		    sh "git commit -m 'Update base version in develop'"
-            		
+            		    // Switch to the 'develop' branch
+                    	    sh 'git checkout develop'
             		    // Pull the latest changes from the 'develop' branch
             		    sh 'git pull origin develop'
             		
