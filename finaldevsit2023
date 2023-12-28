@@ -97,7 +97,7 @@ pipeline {
                         }
                     }
 		    // Display the content of base_version.txt using git show
-                    def baseVersionDev = sh(script: "git show origin/develop:base_version.txt", returnStdout: true).trim()
+                    def baseVersionDev = sh(script: "git show origin/develop:baseversion.txt", returnStdout: true).trim()
 
                     echo "Content of base_version.txt"
                     echo "Last Base version from develop : ${baseVersionDev}"
