@@ -96,7 +96,11 @@ pipeline {
                             return // Skip the rest of the stage
                         }
                     }
-		                // Display the content of base_version.txt using git show
+		    // Display the content of base_version.txt using git show
+		    // Switch to the 'develop' branch
+                    sh 'git checkout develop'
+            	    // Pull the latest changes from the 'develop' branch
+            	    sh 'git pull origin develop'
                     def baseVersionDev = sh(script: "git show origin/develop:baseversion.txt", returnStdout: true).trim()
 
                     echo "Content of base_version.txt"
