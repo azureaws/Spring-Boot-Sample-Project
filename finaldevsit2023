@@ -96,19 +96,11 @@ pipeline {
                             return // Skip the rest of the stage
                         }
                     }
-		    // Fetch the base version file from the 'develop' branch
-                    sh 'git fetch origin develop:develop'
-                    def baseVersionFiledev = "${WORKSPACE}/base_version.txt"
+		    // Display the content of base_version.txt using git show
+                    def baseVersionDev = sh(script: "git show origin/develop:base_version.txt", returnStdout: true).trim()
 
-                    // Checkout the 'develop' branch
-                    sh 'git checkout develop'
-
-                    // Pull the latest changes from the 'develop' branch
-                    sh 'git pull origin develop'
-
-                    // Read the base version from the file in the 'develop' branch
-                    def baseVersionDev = fileExists(baseVersionFiledev) ? readFile(baseVersionFiledev).trim() : null
-                    echo "Base Version (develop): ${baseVersionDev}"
+                    echo "Content of base_version.txt"
+                    echo "Last Base version from develop : ${baseVersionDev}"
 
                     def devSitSyncSuccess = false
                     if (releaseType == 'initialbuild' && branchName == 'develop' && (baseVersion == pomVersion && pomVersion == '1.1.0.1')) {  
