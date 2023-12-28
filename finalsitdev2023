@@ -167,13 +167,18 @@ pipeline {
                     writeFile file: buildVersionFile, text: newVersion
                     writeFile file: baseVersionFile, text: newVersion
                     echo "New version written to ${buildVersionFile}"
+		    // Check if the branch is 'develop'
+		   if (branchName == 'develop') {
 		    // Commit and push the changes back to the 'develop' branch
-                    sh "git add ${baseVersionFile}"
-                    sh "git commit -m 'Update base version in develop'"
+		    sh "git add ${baseVersionFile}"
+		    sh "git commit -m 'Update base version in develop'"
+		
 		    // Pull the latest changes from the 'develop' branch
-                    sh 'git pull origin develop'
-                    sh "git push origin develop"
-
+		    sh 'git pull origin develop'
+		
+		    // Push the changes to the 'develop' branch
+		    sh "git push origin develop"
+		    }
                     // Set a variable to indicate whether the initialization was successful
                     def initializationSuccessful = true
 
