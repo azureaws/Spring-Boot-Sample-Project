@@ -155,7 +155,7 @@ pipeline {
                         echo "Base version: ${baseVersion}"
                         echo "POM Version develop: ${pomVersionDev}"
                         echo "POM Version SIT: ${pomVersionSit}"
-                        error "Invalid release type or mismatch with the base version. Stopping the pipeline."                                     
+                        error "Invalid release type or mismatch with the base version.Base version: ${baseVersion} POM Version SIT: ${pomVersionSit} POM Version develop: ${pomVersionDev} Stopping the pipeline."                                     
                     }
 
                     // Set the base version in the environment
