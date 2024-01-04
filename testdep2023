@@ -54,7 +54,7 @@ pipeline {
                     // Extract version from pom.xml using grep and cut
                     def pomVersionDev = sh(script: "echo '${pomXmlContentDev}' | grep -o '<version>.*</version>' | cut -d'>' -f2 | cut -d'<' -f1 | sed -n 2p", returnStdout: true).trim()
                     echo "POM Version develop: ${pomVersionDev}"
-                    def pomXmlContentSit = sh(script: "git show origin/testsit-1:pom.xml", returnStdout: true).trim()
+                    
 
                     // Initialize base version
                     def baseVersion = fileExists(baseVersionFile) ? readFile(baseVersionFile).trim() : (branchParameter == 'develop' && pomVersion == '1.1.0.1') ? '1.1.0.1' : (branchParameter == 'testsit-1' && pomVersionDev == pomVersion) ? pomVersion : null
@@ -74,7 +74,7 @@ pipeline {
                     // Get the branch name from the choice parameter
                     def branchName = params.BRANCH
                     echo "Branch is: ${branchName}"
-                     if (branchName == 'sit-1') {
+                     if (branchName == 'testsit-1') {
                     def pomXmlContentSit = sh(script: "git show origin/sit-1:pom.xml", returnStdout: true).trim()
                     // Extract version from pom.xml using grep and cut
                     def pomVersionSit = sh(script: "echo '${pomXmlContentSit}' | grep -o '<version>.*</version>' | cut -d'>' -f2 | cut -d'<' -f1 | sed -n 2p", returnStdout: true).trim()
