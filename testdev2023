@@ -104,7 +104,7 @@ pipeline {
                     } else if (releaseType == 'initialbuild' && branchName == 'testsit-1' && baseVersion == pomVersion && pomVersionDev == baseVersion) { 
                         newVersion = "${preMajor}.${preMinor}.${prePatch}.${present2Build}"
                         echo "New version: ${newVersion}"
-                    } else if (releaseType == 'devsitversionsync' && branchName == 'sit-1' &&  pomVersionDev == pomVersionSit && baseVersion != null && pomVersionSit > baseVersion && !devSitSyncSuccess) { 
+                    } else if (releaseType == 'devsitversionsync' && branchName == 'testsit-1' &&  pomVersionDev == pomVersionSit && baseVersion != null && pomVersionSit > baseVersion && !devSitSyncSuccess) { 
                         newVersion = "${preMajor}.${preMinor}.${prePatch}.${present2Build}"
                         echo "New version: ${newVersion}"
                     } else if (releaseType == 'build') {   
