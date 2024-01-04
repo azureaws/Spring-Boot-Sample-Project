@@ -94,7 +94,7 @@ pipeline {
                         }
                     }
 
-
+                    def devSitSyncSuccess = false
                     if (releaseType == 'initialbuild' && branchName == 'develop' && (baseVersion == pomVersion && pomVersion == '1.1.0.1')) {  
                         
                         newVersion = "${preMajor}.${preMinor}.${prePatch}.${present2Build}"
@@ -102,15 +102,7 @@ pipeline {
                     } else if (releaseType == 'initialbuild' && branchName == 'testsit-1' && baseVersion == pomVersion && pomVersionDev == baseVersion) { 
                         newVersion = "${preMajor}.${preMinor}.${prePatch}.${present2Build}"
                         echo "New version: ${newVersion}"
-                    } else if (releaseType == 'devsitversionsync' && branchName == 'develop' &&  pomVersionDev == pomVersionSit) { 
-                        // Get the previous build result
-                        def previousBuildResult = currentBuild.previousBuild?.result
-
-                        // Check if the previous build was successful
-                        if (previousBuildResult == 'SUCCESS') {
-                            echo "Skipping initialization for 'Versionsync' since the previous build was successful."
-                            return // Skip the rest of the stage
-                        }
+                    } else if (releaseType == 'devsitversionsync' && branchName == 'testsit-1' &&  pomVersionDev == pomVersionSit && pomVersionSit == baseVersionDev && baseVersion != null && pomVersionSit >= baseVersion && !devSitSyncSuccess) {                         
                         newVersion = "${preMajor}.${preMinor}.${prePatch}.${present2Build}"
                         echo "New version: ${newVersion}"
                     } else if (releaseType == 'build') {   
