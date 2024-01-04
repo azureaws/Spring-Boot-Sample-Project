@@ -45,8 +45,7 @@ pipeline {
                     def pomVersion = sh(script: 'xmllint --xpath "//*[local-name()=\'project\']/*[local-name()=\'version\']/text()" pom.xml', returnStdout: true).trim()
                     echo "POM version: ${pomVersion}"
 
-                    // Check if the base version file exists
-                    def baseVersionFile = "${WORKSPACE}/${BASE_VERSION_FILE}"
+                    
                     
                     // Read the branch parameter
                     def branchParameter = params.BRANCH
