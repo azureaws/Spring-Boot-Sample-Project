@@ -71,6 +71,7 @@ pipeline {
 
                     // Increment the version based on the release type
                     def newVersion
+                    def pomVersionSit
                     def releaseType = params.releaseType
                     echo "Release type is: ${releaseType}"
 
