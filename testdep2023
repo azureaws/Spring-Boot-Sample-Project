@@ -63,17 +63,36 @@ pipeline {
                     // Write the POM version from develop branch to a file
                     writeFile file: POM_VERSION_SIT_FILE, text: pomVersionSit
 
-                           // Check if the base version file exists
+                    // Initialize base version
+                    def baseVersion = null
                     def baseVersionFile = "${WORKSPACE}/${BASE_VERSION_FILE}"
-                            // Initialize base version
-                    def baseVersion = fileExists(baseVersionFile) ? readFile(baseVersionFile).trim() : (branchParameter == 'develop' && pomVersion == '1.1.0.1') ? '1.1.0.1' : (branchParameter == 'testsit-1' && pomVersionDev == pomVersion) ? pomVersion : null
-
-
+                    
+                    // Check if base version file exists
+                    if (fileExists(baseVersionFile)) {
+                        baseVersion = readFile(baseVersionFile).trim()
+                    } else {
+                        // Set a default base version if the file doesn't exist
+                        baseVersion = getDefaultBaseVersion(branchParameter, pomVersion, pomVersionDev)
+                        // Write the default base version to the file
+                        writeFile file: baseVersionFile, text: baseVersion
+                    }
+                    
                     // Validate and update base version
                     if (baseVersion == null) {
-                        error "Invalid state. Pom.xml needs to be updated accordingly or Baseversion not updated Please run initialbuild.Stopping the pipeline."
+                        error "Invalid state. Pom.xml needs to be updated accordingly or Baseversion not updated $baseVersionPlease run initialbuild. Stopping the pipeline."
                     } else {
                         echo "Base version: ${baseVersion.replaceAll('-SNAPSHOT', '')}"
+                    }
+                    
+                    // Function to get default base version based on conditions
+                    def getDefaultBaseVersion(branchParameter, pomVersion, pomVersionDev) {
+                        if (branchParameter == 'develop' && pomVersion == '1.1.0.1') {
+                            return '1.1.0.1'
+                        } else if (branchParameter == 'testsit-1' && pomVersionDev == pomVersion) {
+                            return pomVersion
+                        } else {
+                            return null
+                        }
                     }
 
                     // Increment the version based on the release type
